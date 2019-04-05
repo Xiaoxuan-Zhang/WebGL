@@ -1,0 +1,85 @@
+<html lang="en">
+  <head>
+      <meta charset="utf-8"/>
+      <title> webGL examples </title>
+      <!-- Include external libraries -->
+      <link rel="stylesheet" href="style.css" type="text/css" title="external style sheet">
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+      <script src = "lib/webgl-utils.js"></script>
+      <script src = "lib/webgl-debug.js"></script>
+      <script src = "lib/updated-cuon-utils.js"></script>
+      <script src = "lib/cuon-matrix.js"></script>
+      <script src = "lib/load-file.js"></script>
+
+      <!-- Include utilities -->
+      <script src = "prog/utilities/noiseMap.js"></script>
+      <script src = "prog/utilities/perlin.js"></script>
+
+      <!-- Include main program -->
+      <script src = "prog/main.js"></script>
+
+      <!-- Include tick function -->
+      <script src = "prog/tick.js"></script>
+
+      <!-- Include internal functions -->
+      <script src = "prog/eventFunctions.js"></script>
+      <script src = "prog/glslFunctions.js"></script>
+      <script src = "prog/htmlFunctions.js"></script>
+
+      <!-- Include scene objects -->
+      <script src = "prog/scene/material.js"></script>
+      <script src = "prog/scene/scene.js"></script>
+      <script src = "prog/scene/vertex.js"></script>
+      <script src = "prog/scene/geometry.js"></script>
+      <script src = "prog/scene/terrain.js"></script>
+      <script src = "prog/scene/camera.js"></script>
+      <script src = "prog/scene/light.js"></script>
+
+      <!-- Include geometric objects -->
+      <script src = "prog/geometries/circle.js"></script>
+      <script src = "prog/geometries/square.js"></script>
+      <script src = "prog/geometries/triangle.js"></script>
+      <script src = "prog/geometries/cube.js"></script>
+      <script src = "prog/geometries/object.js"></script>
+      <script src = "prog/geometries/mesh.js"></script>
+
+      <!-- Include shaders -->
+      <script src = "prog/shaders.js"></script>
+
+      <!-- OBJ Loading -->
+      <script src = "lib/obj_loading/webgl-obj-loader.js"></script>
+      <script src = "lib/obj_loading/loadedOBJ.js"></script>
+      <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  </head>
+
+  <body onload = "main()">
+    <canvas id="my-canvas"> Please use a browser that supports "canvas" </canvas>
+    <div class="my-interface">
+      <div class="container">
+        <div class='flex-container'>
+          <button type="button" class="my-button" onclick="clearCanvas()">Reset Scene</button>
+        </div>
+        <div class="flex-container">
+          <p id="headline">My WebGL</p>
+        </div>
+        <div class="flex-container">
+          <p>FPS: <span id="fps"></span></p>
+        </div>
+        <div class="flex-container">
+          <p>x: <span id="x_value"></span>&nbsp;&nbsp;y: <span id="y_value"></span></p>
+        </div>
+        <div class='flex-container'>
+          <label id="label-displacement" class="my-label">Displacement</label>
+          <input class='my-slider' id="displacement-value" type="range" min="1.0" max="100.0" value="50.0">
+        </div>
+        <div class='flex-container'>
+          <label id="label-sea-level" class="my-label">Sea Level</label>
+          <input class='my-slider' id="sealevel-value" type="range" min="0.0" max="1.0" value="0.5" step=".1">
+        </div>
+        <div class="flex-container">
+          <p class="my-title">Keyboard Controls: WSAD to move, IKJL to rotate</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
