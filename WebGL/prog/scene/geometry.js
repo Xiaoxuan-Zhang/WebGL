@@ -14,7 +14,7 @@ class Geometry {
     this.vertices = []; // an array of vertices with coordinates of x,y,z
     this.normals = []; //the corresponding normals to each vertex
     this.UVs = []; //the corresponding UV to each vertex
-
+    this.indices = [];
     this.modelMatrix = new Matrix4(); // Model matrix applied to geometric object
     this.normalMatrix = new Matrix4();
 
@@ -34,7 +34,7 @@ class Geometry {
       addMaterial(material)
     }
   }
-
+  //Optional
   addMaterial(materialObj) {
     this.material = materialObj;
   }
@@ -76,7 +76,7 @@ class Geometry {
     useShader(gl, this.material.shader);
 
     light.update();
-    
+
     if (this.vertices.length != 0) {
       sendAttributeBufferToGLSL(new Float32Array(this.vertices), 3, "a_position");
     }

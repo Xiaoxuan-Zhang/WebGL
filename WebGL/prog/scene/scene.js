@@ -93,7 +93,7 @@ class Scene {
 */
 function addObjects() {
   //addCat();
-  addTeapot();
+  //addTeapot();
   //addFloor();
   //addEarth();
   //addTerrain();
@@ -157,8 +157,8 @@ function addTerrain() {
   terrainMesh.scale(TERRAIN_SCALE);
   var uniforms = {
     u_sample: {type: "texture", value: g_texture["heightMap"]["diffuse"]},
-    u_displacement: {type: "f", value: TERRAIN_DISPLACEMENT},
-    u_seaLevel: {type: "f", value: TERRAIN_SEA_LEVEL}
+    u_displacement: {type: "f", value: g_terrain['displacement']},
+    u_seaLevel: {type: "f", value: g_terrain['seaLevel']}
   }
   var material = new Material(uniforms, g_programs["Terrain"])
   terrainMesh.addMaterial(material);
@@ -166,6 +166,15 @@ function addTerrain() {
 }
 
 function addPCGTerrain() {
-  var dynamicTerrain = new PCGTerrain(TERRAIN_MAP_SIZE);
+  var dynamicTerrain = new PCGTerrain(TERRAIN_MAP_SIZE, TERRAIN_SCALE, setLodInfo());
   scene.addSceneObject(dynamicTerrain);
+}
+
+/* LOD details: LOD, viewDistance */
+function setLodInfo() {
+  var lodInfo = [];
+  lodInfo.push(50);
+  lodInfo.push(150);
+  //lodInfo.push(400);
+  return lodInfo;
 }

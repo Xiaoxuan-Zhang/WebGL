@@ -12,17 +12,21 @@ class Camera {
    * @constructor
    */
   constructor() {
-    this.position = [0.0, 2.0, 2.0];
+    this.position = [0.0, 10.0, 0.0];
     this.target = [0.0, 0.0, 0.0];
     this.worldUp = [0, 1, 0];
     this.up = [0, 1, 0];
     this.front = [0, 0, -1];
     this.right = this.getRight();
     this.yaw = -90.0;
-    this.pitch = -45.0;
+    this.pitch = -90.0;
     this.viewMatrix = new Matrix4();
     this.projectionMatrix = new Matrix4();
-    this.projectionMatrix.setPerspective(60, canvas.width/canvas.height, 0.1, 100);
+    this.projectionMatrix.setPerspective(60, canvas.width/canvas.height, 0.1, 1000);
+    this.deltaTime = 0.0;
+    this.lastTime = performance.now();
+    this.rotationSpeed = 1.5;
+    this.velocity = 5.0;
     this.update();
   }
 
@@ -31,7 +35,7 @@ class Camera {
   **/
   move(direction) {
     // move the camera around
-    let offset = 0.05;
+    let offset = this.velocity; //0.05;
     if (direction == "forward" ) {
       this.position[0] += this.front[0] * offset;
       this.position[1] += this.front[1] * offset;
@@ -56,24 +60,26 @@ class Camera {
   * rotate camera
   **/
   rotate(direction) {
-    var delta_d = 1.0;
     if (direction == "left")
     {
-      this.yaw -= delta_d;
+      this.yaw -= this.rotationSpeed;
     } else if (direction == "right")
     {
-      this.yaw += delta_d;
+      this.yaw += this.rotationSpeed;
     } else if (direction == "up")
     {
-      this.pitch += delta_d;
+      this.pitch += this.rotationSpeed;
     } else if (direction == "down")
     {
-      this.pitch -= delta_d;
+      this.pitch -= this.rotationSpeed;
     }
     this.update();
   }
 
   update() {
+    var currTime = performance.now();
+    this.deltaTime = currTime - this.lastTime;
+    this.lastTime = currTime;
     this.front[0] = Math.cos(this.yaw * Math.PI/180.0) * Math.cos(this.pitch * Math.PI/180.0);
     this.front[1] = Math.sin(this.pitch * Math.PI/180.0);
     this.front[2] = Math.sin(this.yaw * Math.PI/180.0) * Math.cos(this.pitch * Math.PI/180.0);
@@ -151,5 +157,16 @@ class Camera {
   }
   updateCameraMatrix() {
     this.projectionMatrix.setPerspective(60, canvas.width/canvas.height, 0.1, 100);
+  }
+  getViewDistance(target) {
+    var distance = Math.sqrt(Math.pow((target[0] - this.position[0]),2)
+                  + Math.pow((target[1] - this.position[1]),2)
+                  + Math.pow((target[2] - this.position[2]),2));
+    return distance;
+  }
+  getViewDistanceXZ(target) {
+    var distance = Math.sqrt(Math.pow((target[0] - this.position[0]),2)
+                  + Math.pow((target[2] - this.position[2]),2));
+    return distance;
   }
 }

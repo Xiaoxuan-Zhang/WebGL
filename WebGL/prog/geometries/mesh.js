@@ -33,28 +33,29 @@ class Mesh extends Geometry {
     this.vertices = [];
     this.UVs = [];
     this.normals = [];
+    this.indices = [];
     var topLeftX = (this.meshSize - 1) / -2.0;
     var topLeftZ = (this.meshSize - 1) / 2.0;
     for (var i = 0; i < this.meshSize - 1; i += this.increment) {
       for (var j = 0; j < this.meshSize - 1; j += this.increment) {
-        this.vertices = this.vertices.concat([topLeftX + i, 0, topLeftZ - j,
-                                              topLeftX + i, 0, topLeftZ - j - this.increment,
-                                              topLeftX + i + this.increment, 0, topLeftZ - j - this.increment,
-                                              topLeftX + i + this.increment, 0, topLeftZ - j - this.increment,
-                                              topLeftX + i + this.increment, 0, topLeftZ - j,
-                                              topLeftX + i, 0, topLeftZ - j]);
-        this.UVs = this.UVs.concat([i / this.meshSize, j / this.meshSize,
-                                    i / this.meshSize, (j + this.increment) / this.meshSize,
-                                    (i + this.increment)/this.meshSize, (j + this.increment) / this.meshSize,
-                                    (i + this.increment)/this.meshSize, (j + this.increment) / this.meshSize,
-                                    (i + this.increment)/this.meshSize, j / this.meshSize,
-                                    i / this.meshSize, j / this.meshSize]);
-        this.normals = this.normals.concat([0, 1, 0,
-                                            0, 1, 0,
-                                            0, 1, 0,
-                                            0, 1, 0,
-                                            0, 1, 0,
-                                            0, 1, 0]);
+        this.vertices.push(topLeftX + i, 0, topLeftZ - j,
+                          topLeftX + i, 0, topLeftZ - j - this.increment,
+                          topLeftX + i + this.increment, 0, topLeftZ - j - this.increment,
+                          topLeftX + i + this.increment, 0, topLeftZ - j - this.increment,
+                          topLeftX + i + this.increment, 0, topLeftZ - j,
+                          topLeftX + i, 0, topLeftZ - j);
+        this.UVs.push(i / this.meshSize, j / this.meshSize,
+                      i / this.meshSize, (j + this.increment) / this.meshSize,
+                      (i + this.increment)/this.meshSize, (j + this.increment) / this.meshSize,
+                      (i + this.increment)/this.meshSize, (j + this.increment) / this.meshSize,
+                      (i + this.increment)/this.meshSize, j / this.meshSize,
+                      i / this.meshSize, j / this.meshSize);
+        this.normals.push(0, 1, 0,
+                          0, 1, 0,
+                          0, 1, 0,
+                          0, 1, 0,
+                          0, 1, 0,
+                          0, 1, 0);
       }
     }
   }

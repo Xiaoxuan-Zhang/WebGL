@@ -1,12 +1,8 @@
 /**
 * Global parameters
 */
-var TERRAIN_DISPLACEMENT = 1.0;
-var TERRAIN_SEA_LEVEL = 0.2;
-var TERRAIN_SCALE = 1;
-var TERRAIN_MAP_SIZE = 10;
-var TERRAIN_MAX_VIEW_DISTANCE = 20;
-
+var TERRAIN_SCALE = 1.0;
+var TERRAIN_MAP_SIZE = 129; //Number of vertices
 
 
 /**
@@ -22,9 +18,18 @@ var g_totalObjects = 0;
 var g_loadedObjects = 0;
 var g_loaded = false;
 
-function main() {
-  document.getElementById('headline').innerHTML = "Main scene: Loading..."
+/**
+Globals for terrain
+*/
+var g_terrain = {};
+g_terrain["displacement"] = 8.0;
+g_terrain["seaLevel"] = 0.2;
 
+
+function main() {
+  document.getElementById('displacement-value').value = g_terrain["displacement"];
+  document.getElementById('sealevel-value').value = g_terrain["seaLevel"];
+  document.getElementById('headline').innerHTML = "Main scene: Loading..."
   canvas = document.getElementById('my-canvas');
   if (!canvas)
   {
@@ -61,7 +66,7 @@ function addShaderPrograms()
 
 function loadTextures() {
   //loadTextureFile("external/textures/wood.png", "wood", "diffuse");
-  loadTextureFile("external/textures/TeapotTex.png", "teapot", "diffuse");
+  //loadTextureFile("external/textures/TeapotTex.png", "teapot", "diffuse");
   //loadTextureFile("external/OBJ/h5uo4n0v569s-earth/4096_earth.jpg", "earth", "diffuse");
   //loadTextureFile("external/OBJ/Cat-1/Cat_D.PNG", "cat", "diffuse");
   //loadTextureFile("external/OBJ/Cat-1/Cat_S.PNG", "cat", "specular");
@@ -70,7 +75,7 @@ function loadTextures() {
 }
 
 function loadObjects () {
-  loadObjectFile('external/OBJ/teapot.obj', "teapot");
+  //loadObjectFile('external/OBJ/teapot.obj', "teapot");
   //loadObjectFile('external/OBJ/Cat-1/cat.obj', "cat");
   //loadObjectFile('external/OBJ/h5uo4n0v569s-earth/earth.obj', "earth");
   //loadObjectFile('external/OBJ/jaguar.obj', "jaguar");

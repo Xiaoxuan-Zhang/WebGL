@@ -30,6 +30,8 @@ function initEventHandelers() {
 
   document.onkeydown = function(ev){ keydown(ev); };
   window.addEventListener("resize", resizeCanvas, false);
+  document.getElementById("displacement-value").addEventListener("change", setDisplacement, false);
+  document.getElementById("sealevel-value").addEventListener("change", setSeaLevel, false);
 }
 
 function resizeCanvas() {
@@ -126,5 +128,12 @@ function handleTextureFiles(files){
   } else {
     alert("Failed to load file");
   }
+}
 
+function setDisplacement() {
+  g_terrain["displacement"] = Number(document.getElementById("displacement-value").value);
+}
+
+function setSeaLevel() {
+  g_terrain["seaLevel"] = Number(document.getElementById("sealevel-value").value);
 }
