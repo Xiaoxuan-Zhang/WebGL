@@ -30,33 +30,74 @@ class Mesh extends Geometry {
    * @private Generate a map
    */
   createMesh() {
-    this.vertices = [];
-    this.UVs = [];
-    this.normals = [];
-    this.indices = [];
-    var topLeftX = (this.meshSize - 1) / -2.0;
-    var topLeftZ = (this.meshSize - 1) / 2.0;
-    for (var i = 0; i < this.meshSize - 1; i += this.increment) {
-      for (var j = 0; j < this.meshSize - 1; j += this.increment) {
-        this.vertices.push(topLeftX + i, 0, topLeftZ - j,
-                          topLeftX + i, 0, topLeftZ - j - this.increment,
-                          topLeftX + i + this.increment, 0, topLeftZ - j - this.increment,
-                          topLeftX + i + this.increment, 0, topLeftZ - j - this.increment,
-                          topLeftX + i + this.increment, 0, topLeftZ - j,
-                          topLeftX + i, 0, topLeftZ - j);
-        this.UVs.push(i / this.meshSize, j / this.meshSize,
-                      i / this.meshSize, (j + this.increment) / this.meshSize,
-                      (i + this.increment)/this.meshSize, (j + this.increment) / this.meshSize,
-                      (i + this.increment)/this.meshSize, (j + this.increment) / this.meshSize,
-                      (i + this.increment)/this.meshSize, j / this.meshSize,
-                      i / this.meshSize, j / this.meshSize);
-        this.normals.push(0, 1, 0,
-                          0, 1, 0,
-                          0, 1, 0,
-                          0, 1, 0,
-                          0, 1, 0,
-                          0, 1, 0);
+    let totalColumn = (this.meshSize - 1) / this.increment;
+    let totalRow = (this.meshSize - 1) / this.increment;
+    this.vertices = new Float32Array(totalColumn * totalRow * 6 * 3);
+    this.UVs = new Float32Array(totalColumn * totalRow * 6 * 2);
+    this.normals = new Float32Array(totalColumn * totalRow * 6 * 3);
+    let btmLeftX = (this.meshSize - 1) / -2.0;
+    let btmLeftZ = (this.meshSize - 1) / 2.0;
+
+    for (let i = 0; i < this.meshSize - 1; i += this.increment) {
+      for (let j = 0; j < this.meshSize - 1; j += this.increment) {
+        let vertexId = (i / this.increment) * totalColumn  + j / this.increment;
+        this.setSquareVertices(vertexId * 18, btmLeftX + i, btmLeftZ - j, this.increment);
+        this.setSquareUVs(vertexId * 12, i, j, this.meshSize, this.increment);
+        this.setSquareNormals(vertexId * 18);
       }
+    }
+  }
+  setSquareVertices(startIndex, x, z, increment) {
+    //bottom left
+    this.vertices[startIndex++] = x;
+    this.vertices[startIndex++] = 0;
+    this.vertices[startIndex++] = z;
+    //top left
+    this.vertices[startIndex++] = x;
+    this.vertices[startIndex++] = 0;
+    this.vertices[startIndex++] = z - increment;
+    //top right
+    this.vertices[startIndex++] = x + increment;
+    this.vertices[startIndex++] = 0;
+    this.vertices[startIndex++] = z - increment;
+    //top right
+    this.vertices[startIndex++] = x + increment;
+    this.vertices[startIndex++] = 0;
+    this.vertices[startIndex++] = z - increment;
+    //bottom right
+    this.vertices[startIndex++] = x + increment;
+    this.vertices[startIndex++] = 0;
+    this.vertices[startIndex++] = z;
+    //bottom left
+    this.vertices[startIndex++] = x;
+    this.vertices[startIndex++] = 0;
+    this.vertices[startIndex++] = z;
+  }
+  setSquareUVs(startIndex, rowIndex, columnIndex, meshSize, increment) {
+    //bottom left
+    this.UVs[startIndex++] = rowIndex / meshSize;
+    this.UVs[startIndex++] = columnIndex / meshSize;
+    //top left
+    this.UVs[startIndex++] = rowIndex / meshSize;
+    this.UVs[startIndex++] = (columnIndex + increment) / meshSize;
+    //top right
+    this.UVs[startIndex++] = (rowIndex + increment) / meshSize;
+    this.UVs[startIndex++] = (columnIndex + increment) / meshSize;
+    //top right
+    this.UVs[startIndex++] = (rowIndex + increment) / meshSize;
+    this.UVs[startIndex++] = (columnIndex + increment) / meshSize;
+    //bottom right
+    this.UVs[startIndex++] = (rowIndex + increment) / meshSize;
+    this.UVs[startIndex++] = columnIndex / meshSize;
+    //bottom left
+    this.UVs[startIndex++] = rowIndex / meshSize;
+    this.UVs[startIndex++] = columnIndex / meshSize;
+  }
+  setSquareNormals(startIndex) {
+    for (let i = 0; i < 6; i++) {
+      this.normals[startIndex++] = 0;
+      this.normals[startIndex++] = 1;
+      this.normals[startIndex++] = 0;
     }
   }
 

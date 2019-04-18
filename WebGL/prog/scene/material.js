@@ -32,7 +32,7 @@ class Material {
    * @param {Object} uniform an object containing type and value of this uniform
    */
    sendUniformToGLSL() {
-     for(var key in this.uniforms) {
+     for(let key in this.uniforms) {
        let name = key;
        let type = "f";
        let value = this.uniforms[key].value;
@@ -42,7 +42,10 @@ class Material {
        }
        if (type == "f"){
          sendUniformFloatToGLSL(value, name);
-       } else if (type == "texture") {
+       } else if (type == "uint") {
+         sendUniformUintToGLSL(value, name);
+       }
+       else if (type == "texture") {
          if (!(name in this.textureUnit)) {
            send2DTextureToGLSL(value, this.textureUnitCount, name);
            this.textureUnit[name] = this.textureUnitCount;

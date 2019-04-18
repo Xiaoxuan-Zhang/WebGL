@@ -13,11 +13,10 @@ class Scene {
   constructor() {
     this.geometries = []; // Geometries being drawn on canvas
     this.sceneObjects = []; //Objects being added to scene
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
   init() {
+    this.clearGeometry();
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     camera = new Camera();
@@ -49,6 +48,7 @@ class Scene {
     // Recommendations: It would be best to call this.render() at the end of
     // this call.
     this.geometries = [];
+    this.sceneObjects = [];
     this.render();
   }
 
@@ -73,18 +73,20 @@ class Scene {
    * Renders all the Geometry within the scene.
    */
   render() {
-    var start = performance.now();
+    //let start = performance.now();
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     this.sceneObjects.forEach(function(object) {
       object.render();
     });
+
     this.geometries.forEach(function(geometry){
       if (geometry.visible) {
         geometry.render();
       }
     })
-    var duration = Math.round(performance.now() - start);
-    sendTextToHTML(Math.round(1000/duration), 'fps');
+    // let duration = Math.round(performance.now() - start);
+    // g_guiInfo.fps = 1000/duration;
   }
 }
 
@@ -96,85 +98,69 @@ function addObjects() {
   //addTeapot();
   //addFloor();
   //addEarth();
-  //addTerrain();
   addPCGTerrain();
 
 }
 function addCat() {
-  var geo = new CustomObject(g_object["cat"]);
-  var uniforms = {
+  let geo = new CustomObject(g_object["cat"]);
+  let uniforms = {
     u_sample: {type: "texture", value: g_texture["cat"]["diffuse"]},
     v_objectColor: {type: 'v3', value: [0.7, 0.5, 0.5]}
   };
-  var material = new Material(uniforms, g_programs['Texture']);
+  let material = new Material(uniforms, g_programs['Texture']);
   geo.translate(0.2, 0.0, 0.0);
   geo.scale(0.7);
   geo.addMaterial(material);
   scene.addGeometry(geo);
 }
 function addTeapot() {
-  var geo = new CustomObject(g_object["teapot"]);
-  geo.translate(0.0, 0.0, 0.0);
+  let geo = new CustomObject(g_object["teapot"]);
+  geo.translate(0.0, 5.0, 0.0);
   geo.rotate(90, [0, 1, 0]);
-  geo.scale(0.3);
-  var uniforms = {
-    //u_sample: {type: "texture", value: g_texture["teapot"]["diffuse"]}
+  geo.scale(5.0);
+  let uniforms = {
+    u_sample: {type: "texture", value: g_texture["teapot"]["diffuse"]},
     u_objectColor: {type: "v3", value: [0.7, 0.7, 1.0]}
   }
-  var material = new Material(uniforms, g_programs["BasicLights"])
+  let material = new Material(uniforms, g_programs["BasicLights"])
   geo.addMaterial(material);
   scene.addGeometry(geo);
 }
 
 function addFloor() {
-  var geo = new Square();
+  let geo = new Square();
   geo.scale(20);
   geo.rotate(90, [1, 0, 0]);
-  var uniforms = {
+  let uniforms = {
     u_sample: {type: "texture", value: g_texture["wood"]["diffuse"]}
   };
-  var material = new Material(uniforms, g_programs["Texture"]);
+  let material = new Material(uniforms, g_programs["Texture"]);
   geo.addMaterial(material);
   scene.addGeometry(geo);
 }
 
 function addEarth() {
-  var geo = new CustomObject(g_object["earth"]);
+  let geo = new CustomObject(g_object["earth"]);
   geo.translate(-0.4, 1.0, 0.0);
   geo.rotate(90, [0, 1, 0]);
   geo.scale(0.001);
-  var uniforms = {
+  let uniforms = {
     //u_sample: {type: "texture", value: g_texture["earth"]["diffuse"]},
     u_objectColor: {type: "v3", value: [0.7, 0.5, 0.5]}
   }
-  var material = new Material(uniforms, g_programs["BasicLights"])
+  let material = new Material(uniforms, g_programs["BasicLights"])
   geo.addMaterial(material);
   scene.addGeometry(geo);
 }
 
-function addTerrain() {
-  var terrainMesh = new Mesh(TERRAIN_MAP_SIZE, 1);
-  terrainMesh.scale(TERRAIN_SCALE);
-  var uniforms = {
-    u_sample: {type: "texture", value: g_texture["heightMap"]["diffuse"]},
-    u_displacement: {type: "f", value: g_terrain['displacement']},
-    u_seaLevel: {type: "f", value: g_terrain['seaLevel']}
-  }
-  var material = new Material(uniforms, g_programs["Terrain"])
-  terrainMesh.addMaterial(material);
-  scene.addGeometry(terrainMesh);
-}
-
 function addPCGTerrain() {
-  var dynamicTerrain = new PCGTerrain(TERRAIN_MAP_SIZE, TERRAIN_SCALE, setLodInfo());
-  scene.addSceneObject(dynamicTerrain);
+  scene.addSceneObject(new PCGTerrain(g_terrain['mapSize'], g_terrain['scale'], setLodInfo()));
 }
 
 /* LOD details: LOD, viewDistance */
 function setLodInfo() {
-  var lodInfo = [];
-  lodInfo.push(50);
-  lodInfo.push(150);
-  //lodInfo.push(400);
+  let lodInfo = [];
+  lodInfo.push(200);
+  lodInfo.push(400);
   return lodInfo;
 }

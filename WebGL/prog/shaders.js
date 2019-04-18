@@ -141,18 +141,29 @@ var TERRAIN_VSHADER1 =
   uniform mat4 u_projection;
   uniform mat4 u_normalMatrix;
   uniform float u_displacement;
+  uniform vec3 u_terrain;
+  uniform vec3 u_noise;
+  uniform vec2 u_mouse;
 
   attribute vec4 a_position;
   attribute vec2 a_texCoord;
   attribute vec3 a_normal;
   varying vec2 v_texCoord;
-  varying vec4 v_position;
   varying float v_noise;
+  varying vec3 v_terrain;
 
   const int OCTAVES = 8;
-  float applyCurve(float x) {
-    return 1.0 - pow(abs(x), 2.5);
-  }
+
+  //
+  // Description : Array and textureless GLSL 2D simplex noise function.
+  //      Author : Ian McEwan, Ashima Arts.
+  //  Maintainer : stegu
+  //     Lastmod : 20110822 (ijm)
+  //     License : Copyright (C) 2011 Ashima Arts. All rights reserved.
+  //               Distributed under the MIT License. See LICENSE file.
+  //               https://github.com/ashima/webgl-noise
+  //               https://github.com/stegu/webgl-noise
+  //
 
   vec3 mod289(vec3 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -214,48 +225,74 @@ var TERRAIN_VSHADER1 =
     g.yz = a0.yz * x12.xz + h.yz * x12.yw;
     return 130.0 * dot(m, g);
   }
+  const float P1 = 0.1;
+  const float P2 = 0.2;
+  const float P3 = 0.5;
+  const float P4 = 1.0;
 
-  float noise(vec2 v, float persistance, float lacunarity) {
-    float freq = 1.0;
+  float curve(float t) {
+    float invT = (1.0 - t);
+    float P = P1 * pow(invT,3.0) +
+      P2 * 3.0 * t * pow(invT, 2.0) +
+      P3 * 3.0 * invT * pow(t, 2.0) +
+      P4 * pow(t, 3.0);
+    return P;
+  }
+
+  float noise(vec2 v, vec2 offset, float persistance, float lacunarity, float exponent) {
+    float freq = 0.005;
     float amplitude = 1.0;
     float noise_value = 0.0;
     for (int i = 0; i < OCTAVES; i ++) {
-      float sample_x = freq * v.x;
-      float sample_y = freq * v.y;
-      noise_value += amplitude * snoise(vec2(sample_x, sample_y));
+      float sample_x = freq * v.x + offset.x;
+      float sample_y = freq * v.y + offset.y;
+      noise_value += amplitude * (0.5 * snoise(vec2(sample_x, sample_y)) + 0.5);
       amplitude *= persistance;
       freq *= lacunarity;
     }
-    noise_value = pow(noise_value, 0.8);
+    noise_value = pow(noise_value, exponent);
     return noise_value;
   }
 
   void main(){
+    float persistance = u_noise[0];
+    float lacunarity = u_noise[1];
+    float exponent = u_noise[2];
     vec4 world_pos = u_model * a_position;
-    float noise_value = noise(world_pos.xz * 0.01, 0.5, 2.0);
+    float noise_value = noise(world_pos.xz, u_mouse * 10.0, persistance, lacunarity, exponent);
     vec3 new_position = world_pos.xyz + a_normal * u_displacement * noise_value;
+
     gl_Position = u_projection * u_view * vec4(new_position, 1.0);
-    v_position = gl_Position;
     v_noise = noise_value;
     v_texCoord = a_texCoord;
+    v_terrain = u_terrain;
   }
 `;
 
 var TERRAIN_FSHADER1 =
 `
 precision mediump float;
-uniform float u_seaLevel;
-varying vec2 v_texCoord;
-varying vec4 v_position;
+uniform vec3 u_cameraPos;
 varying float v_noise;
+varying vec3 v_terrain;
 
+const vec3 light_pos = vec3(0.0, 200.0, -10.0);
 void main(){
-  vec3 color = vec3(0.0);
-  if (v_noise > u_seaLevel) {
-    color = vec3(v_noise);
+  float water = v_terrain[0];
+  float earth = v_terrain[1];
+  float snow = v_terrain[2];
+  vec3 snow_color = vec3(.5, .5, .5) * v_noise;
+  vec3 earth_color = vec3(0.44, 0.28, 0.24) * v_noise;
+  vec3 water_color = vec3(0.0, 0.47, 0.75);
+  vec3 color = vec3(v_noise);
+  if (v_noise > snow) {
+    color = snow_color;
+  } else if (v_noise < water) {
+    color = water_color;
   } else {
-    color = vec3(0.0, 1.0, 1.0) * v_noise;
+    color = earth_color;
   }
+
   gl_FragColor = vec4(color, 1.0);
 
 }

@@ -16,7 +16,7 @@ function send2DTextureToGLSL(val, textureUnit, uniformName) {
   //    5. Send the texture unit (textureUnit not the one you found) to your
   //       uniform location.
 
-  var u_sample = gl.getUniformLocation(gl.program, uniformName);
+  let u_sample = gl.getUniformLocation(gl.program, uniformName);
   if (!u_sample) {
     console.log('Failed to get the storage location of' + uniformName);
     return false;
@@ -58,7 +58,7 @@ function create2DTexture(imgPath, magParam, minParam, wrapSParam, wrapTParam, ca
   //  5. Pass your completed texture object to your callback function
   //
   // NOTE: This function should not return anything.
-  var image = new Image();  // Create the image object
+  let image = new Image();  // Create the image object
   if (!image) {
     console.log('Failed to create the image object');
     return false;
@@ -66,7 +66,7 @@ function create2DTexture(imgPath, magParam, minParam, wrapSParam, wrapTParam, ca
 
   // Register the event handler to be called on loading an image
   image.onload = function(){
-    var texture = gl.createTexture();   // Create a texture object
+    let texture = gl.createTexture();   // Create a texture object
     if (!texture) {
       console.log('Failed to create the texture object');
       return false;
@@ -102,7 +102,7 @@ function sendAttributeBufferToGLSL(data, dataCount, attribName) {
   // Some modifications can be made to this function to improve performance. Ask
   // a TA in lab if you're interested in these modifications.
   // Create a buffer object
-  var newBuffer = gl.createBuffer();
+  let newBuffer = gl.createBuffer();
   if (!newBuffer) {
     console.log('Failed to create the buffer object');
     return -1;
@@ -112,7 +112,7 @@ function sendAttributeBufferToGLSL(data, dataCount, attribName) {
   // Write date into the buffer object
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
 
-  var attribLoc = gl.getAttribLocation(gl.program, attribName);
+  let attribLoc = gl.getAttribLocation(gl.program, attribName);
   if (attribLoc < 0) {
     console.log('Failed to get the storage location of ' + attribName);
     return -1;
@@ -132,7 +132,7 @@ function sendAttributeBufferToGLSL(data, dataCount, attribName) {
  */
 function setIndexBuffer(indices) {
 // Write the indices to the buffer object
-  var indexBuffer = gl.createBuffer();
+  let indexBuffer = gl.createBuffer();
   if (!indexBuffer) {
     console.log('Failed to create the buffer object');
     return -1;
@@ -156,6 +156,26 @@ function tellGLSLToDrawCurrentBuffer(pointCount) {
 function tellGLSLToDrawArrays(pointCount) {
   gl.drawArrays(gl.TRIANGLES, 0, pointCount);
 }
+
+/**
+ * Sends a unsigned int value to the specified uniform variable within GLSL shaders.
+ * Prints an error message if unsuccessful.
+ *
+ * @param {int} val The float value being passed to uniform variable
+ * @param {String} uniformName The name of the uniform variable
+ */
+function sendUniformUintToGLSL(val, uniformName) {
+  //
+  // YOUR CODE HERE
+  //
+  let val_loc = gl.getUniformLocation(gl.program, uniformName);
+  if (val_loc < 0) {
+    console.log('Failed to get the storage location of ' + uniformName);
+    return;
+  }
+  gl.uniform1ui(val_loc, val);
+}
+
 /**
  * Sends a float value to the specified uniform variable within GLSL shaders.
  * Prints an error message if unsuccessful.
@@ -167,7 +187,7 @@ function sendUniformFloatToGLSL(val, uniformName) {
   //
   // YOUR CODE HERE
   //
-  var val_loc = gl.getUniformLocation(gl.program, uniformName);
+  let val_loc = gl.getUniformLocation(gl.program, uniformName);
   if (val_loc < 0) {
     console.log('Failed to get the storage location of ' + uniformName);
     return;
@@ -186,7 +206,7 @@ function sendUniformVec4ToGLSL(val, uniformName) {
   //
   // YOUR CODE HERE
   //
-  var val_loc = gl.getUniformLocation(gl.program, uniformName);
+  let val_loc = gl.getUniformLocation(gl.program, uniformName);
   if (val_loc < 0) {
     console.log('Failed to get the storage location of ' + uniformName);
     return;
@@ -202,7 +222,7 @@ function sendUniformVec4ToGLSL(val, uniformName) {
  * @param {String} uniformName The name of the uniform variable
  */
 function sendUniformVec3ToGLSL(val, uniformName) {
-  var val_loc = gl.getUniformLocation(gl.program, uniformName);
+  let val_loc = gl.getUniformLocation(gl.program, uniformName);
   if (val_loc < 0) {
     console.log('Failed to get the storage location of ' + uniformName);
     return;
@@ -218,7 +238,7 @@ function sendUniformVec3ToGLSL(val, uniformName) {
  * @param {String} uniformName The name of the uniform variable
  */
 function sendUniformVec2ToGLSL(val, uniformName) {
-  var val_loc = gl.getUniformLocation(gl.program, uniformName);
+  let val_loc = gl.getUniformLocation(gl.program, uniformName);
   if (val_loc < 0) {
     console.log('Failed to get the storage location of ' + uniformName);
     return;
@@ -235,7 +255,7 @@ function sendUniformVec2ToGLSL(val, uniformName) {
  */
  function sendUniformMat4ToGLSL(val, uniformName) {
    // Recomendations: This is going to be very similar to sending a float/vec.
-   var val_loc = gl.getUniformLocation(gl.program, uniformName);
+   let val_loc = gl.getUniformLocation(gl.program, uniformName);
    if (val_loc < 0) {
      console.log('Failed to get the storage location of ' + uniformName);
      return;

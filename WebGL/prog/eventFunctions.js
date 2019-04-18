@@ -1,6 +1,4 @@
 var isMousedown = false;
-var g_object;
-var g_texture;
 
 /**
  * Responsible for initializing buttons, sliders, radio buttons, etc. present
@@ -19,28 +17,27 @@ function initEventHandelers() {
     {
       click(ev);
     }
-    var x = ev.clientX;
-    var y = ev.clientY;
-    var rect = ev.target.getBoundingClientRect();
+    let x = ev.clientX;
+    let y = ev.clientY;
+    let rect = ev.target.getBoundingClientRect();
     x = (x - rect.left) * 2.0/canvas.width - 1.0;
     y = (y - rect.top) * -2.0/canvas.height + 1.0;
-    sendTextToHTML(x.toFixed(2), 'x_value');
-    sendTextToHTML(y.toFixed(2), 'y_value');
+    g_mousePos = [x, -y];
   };
 
   document.onkeydown = function(ev){ keydown(ev); };
   window.addEventListener("resize", resizeCanvas, false);
-  document.getElementById("displacement-value").addEventListener("change", setDisplacement, false);
-  document.getElementById("sealevel-value").addEventListener("change", setSeaLevel, false);
+  // document.getElementById("displacement-value").addEventListener("change", setDisplacement, false);
+  // document.getElementById("sealevel-value").addEventListener("change", setSeaLevel, false);
 }
 
 function resizeCanvas() {
-  var realToCSSPixels = window.devicePixelRatio;
+  let realToCSSPixels = window.devicePixelRatio;
   // Lookup the size the browser is displaying the canvas in CSS pixels
   // and compute a size needed to make our drawingbuffer match it in
   // device pixels.
-  var displayWidth  = Math.floor(gl.canvas.clientWidth  * realToCSSPixels);
-  var displayHeight = Math.floor(gl.canvas.clientHeight * realToCSSPixels);
+  let displayWidth  = Math.floor(gl.canvas.clientWidth  * realToCSSPixels);
+  let displayHeight = Math.floor(gl.canvas.clientHeight * realToCSSPixels);
 
   // Check if the canvas is not the same size.
   if (canvas.width  != displayWidth ||
@@ -59,9 +56,9 @@ function resizeCanvas() {
  * @param {Object} ev The event object containing the mouse's canvas position
  */
 function click(ev) {
-  var x = ev.clientX;
-  var y = ev.clientY;
-  var rect = ev.target.getBoundingClientRect();
+  let x = ev.clientX;
+  let y = ev.clientY;
+  let rect = ev.target.getBoundingClientRect();
   x = (x - rect.left) * 2.0/canvas.width - 1.0;
   y = (y - rect.top) * -2.0/canvas.height + 1.0;
 
@@ -88,21 +85,13 @@ function keydown(ev) {
     else
     { return; } // Prevent the unnecessary drawing
 }
-/**
- * Clears the HTML canvas.
- */
-function clearCanvas() {
-  scene.clearGeometry();
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  scene.init();
-}
 
 function handleObjFiles(files){
-  var filename = files[0];
+  let filename = files[0];
   if (filename) {
-      var reader = new FileReader();
+      let reader = new FileReader();
       reader.onload = function(e) {
-	      var obj_text = e.target.result;
+	      let obj_text = e.target.result;
         g_object = new LoadedOBJ(obj_text);
       };
       reader.readAsText(filename);
@@ -117,10 +106,10 @@ function customTextureLoadedCallback(texture)
 }
 
 function handleTextureFiles(files){
-  var filename = files[0];
+  let filename = files[0];
   if (filename)
   {
-    var reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = function(e) {
       create2DTexture(e.target.result, gl.LINEAR, gl.LINEAR, gl.REPEAT, gl.REPEAT, customTextureLoadedCallback);
     }
@@ -128,12 +117,4 @@ function handleTextureFiles(files){
   } else {
     alert("Failed to load file");
   }
-}
-
-function setDisplacement() {
-  g_terrain["displacement"] = Number(document.getElementById("displacement-value").value);
-}
-
-function setSeaLevel() {
-  g_terrain["seaLevel"] = Number(document.getElementById("sealevel-value").value);
 }
