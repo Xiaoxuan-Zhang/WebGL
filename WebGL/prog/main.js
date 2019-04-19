@@ -16,7 +16,7 @@ Globals for terrain
 */
 var g_terrain = {
   scale: 1,
-  mapSize: 257,
+  mapSize: 257, //must be (2^n + 1)
   displacement: 15.0,
   water: 0.4,
   earth: 0.4,
@@ -24,7 +24,7 @@ var g_terrain = {
   persistance: 0.4,
   lacunarity: 2.0,
   exponent: 2.5,
-  updateMouse: true
+  updateMouse: false
 };
 /**
 Globals for GUI
@@ -46,7 +46,7 @@ function main() {
     console.log('Fail to retrieve canvas element');
     return false;
   }
-  gl = getWebGLContext(canvas);
+  gl = getWebGLContext(canvas, false);
   if (!gl)
   {
     console.log('Failed to get the webgl context');

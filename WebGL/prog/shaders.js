@@ -141,7 +141,6 @@ var TERRAIN_VSHADER1 =
   uniform mat4 u_projection;
   uniform mat4 u_normalMatrix;
   uniform float u_displacement;
-  uniform vec3 u_terrain;
   uniform vec3 u_noise;
   uniform vec2 u_mouse;
 
@@ -150,7 +149,8 @@ var TERRAIN_VSHADER1 =
   attribute vec3 a_normal;
   varying vec2 v_texCoord;
   varying float v_noise;
-  varying vec3 v_terrain;
+  varying vec3 v_normal;
+  varying vec3 v_fragPos;
 
   const int OCTAVES = 8;
 
@@ -265,7 +265,8 @@ var TERRAIN_VSHADER1 =
     gl_Position = u_projection * u_view * vec4(new_position, 1.0);
     v_noise = noise_value;
     v_texCoord = a_texCoord;
-    v_terrain = u_terrain;
+    v_normal = a_normal;
+    v_fragPos = new_position;
   }
 `;
 
@@ -273,27 +274,63 @@ var TERRAIN_FSHADER1 =
 `
 precision mediump float;
 uniform vec3 u_cameraPos;
+uniform vec3 u_terrain;
+uniform float u_time;
 varying float v_noise;
-varying vec3 v_terrain;
+varying vec3 v_normal;
+varying vec2 v_texCoord;
+varying vec3 v_fragPos;
 
-const vec3 light_pos = vec3(0.0, 200.0, -10.0);
-void main(){
-  float water = v_terrain[0];
-  float earth = v_terrain[1];
-  float snow = v_terrain[2];
-  vec3 snow_color = vec3(.5, .5, .5) * v_noise;
-  vec3 earth_color = vec3(0.44, 0.28, 0.24) * v_noise;
-  vec3 water_color = vec3(0.0, 0.47, 0.75);
-  vec3 color = vec3(v_noise);
-  if (v_noise > snow) {
-    color = snow_color;
-  } else if (v_noise < water) {
-    color = water_color;
-  } else {
-    color = earth_color;
+const vec3 LIGHT_POSITION = vec3(0.0, 200.0, -10.0);
+const vec3 DIFFUSE_COLOR = vec3(0.01, 0.39, 0.41);
+float rand(vec2 v){
+    return fract(sin(dot(v ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+vec3 calcLights() {
+  //ambient
+  vec3 base_color = vec3(0.01, 0.1, 0.89) * 0.5;
+  //diffuse
+  vec3 norm = normalize(v_normal);
+  vec3 light_dir = LIGHT_POSITION - v_fragPos;
+  float diffuse = max(dot(light_dir, norm), 0.0);
+  vec3 diffuse_color = DIFFUSE_COLOR * diffuse;
+  return base_color;
+}
+
+vec3 snow() {
+  vec3 snow_color = vec3(0.5) * v_noise;
+  //snow_color *= calcLights();
+  vec2 v = v_fragPos.xz;
+  if (rand(v) > 0.998) {
+    snow_color += abs(sin(u_time + v.x*v.y)) * vec3(1.0);
   }
 
-  gl_FragColor = vec4(color, 1.0);
+  return snow_color;
+}
 
+vec3 earth() {
+  vec3 earth_color = vec3(0.44, 0.28, 0.24) * v_noise;
+  //earth_color *= calcLights();
+  return earth_color;
+}
+
+vec3 water() {
+  vec3 water_color = vec3(0.0, 0.06, 0.3);
+  //water_color *= calcLights();
+  return water_color;
+}
+
+void main(){
+  float water_level = u_terrain[0];
+  float snow_level = u_terrain[2];
+  vec3 color = earth();
+
+  if (v_noise > snow_level) {
+    color = snow();
+  } else if (v_noise < water_level) {
+    color = water();
+  }
+  gl_FragColor = vec4(color, 1.0);
 }
 `;

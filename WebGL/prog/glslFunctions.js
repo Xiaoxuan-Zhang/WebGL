@@ -84,24 +84,7 @@ function create2DTexture(imgPath, magParam, minParam, wrapSParam, wrapTParam, ca
   // Tell the browser to load an image
   image.src = imgPath;
 }
-
-/**
- * Sends data to an attribute variable using a buffer.
- *
- * @private
- * @param {Float32Array} data Data being sent to attribute variable
- * @param {Number} dataCount The amount of data to pass per vertex
- * @param {String} attribName The name of the attribute variable
- */
-function sendAttributeBufferToGLSL(data, dataCount, attribName) {
-  // Recommendations: This piece of code should do these three things:
-  // 1. Create a an attribute buffer
-  // 2. Bind data to that buffer
-  // 3. Enable the buffer for use
-  //
-  // Some modifications can be made to this function to improve performance. Ask
-  // a TA in lab if you're interested in these modifications.
-  // Create a buffer object
+function createBufferData(data) {
   let newBuffer = gl.createBuffer();
   if (!newBuffer) {
     console.log('Failed to create the buffer object');
@@ -111,6 +94,24 @@ function sendAttributeBufferToGLSL(data, dataCount, attribName) {
   gl.bindBuffer(gl.ARRAY_BUFFER, newBuffer);
   // Write date into the buffer object
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  return newBuffer;
+}
+/**
+ * Sends data to an attribute variable using a buffer.
+ *
+ * @private
+ * @param {Float32Array} data Data being sent to attribute variable
+ * @param {Number} dataCount The amount of data to pass per vertex
+ * @param {String} attribName The name of the attribute variable
+ */
+function sendAttributeBufferToGLSL(newBuffer, dataCount, attribName) {
+
+  if (!newBuffer) {
+    console.log('Invalid buffer object!');
+    return -1;
+  }
+  // Bind the buffer object to target
+  gl.bindBuffer(gl.ARRAY_BUFFER, newBuffer);
 
   let attribLoc = gl.getAttribLocation(gl.program, attribName);
   if (attribLoc < 0) {

@@ -4,7 +4,7 @@
  * @author "Zhang Xiaoxuan"
  * @this {Mesh}
  */
-class Mesh extends Geometry {
+class Mesh {
   /**
    * Constructor for mesh.
    *
@@ -14,13 +14,12 @@ class Mesh extends Geometry {
    */
   constructor(meshSize, levelOfDetail) {
     // "super" keyword can come in handy when minimizing code reuse.
-    super();
+    this.vertices = []; // an array of vertices with coordinates of x,y,z
+    this.normals = []; //the corresponding normals to each vertex
+    this.UVs = []; //the corresponding UV to each vertex
+    this.indices = [];
     this.meshSize = meshSize;
-    if (levelOfDetail == 0) {
-      this.increment = 1;
-    } else {
-      this.increment = levelOfDetail * 2;
-    }
+    this.increment = Math.pow(2.0, levelOfDetail);
     this.createMesh();
   }
 
