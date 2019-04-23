@@ -143,7 +143,7 @@ var TERRAIN_VSHADER1 =
   uniform float u_displacement;
   uniform vec3 u_noise;
   uniform vec2 u_mouse;
-
+  uniform vec3 u_cameraPos;
   attribute vec4 a_position;
   attribute vec2 a_texCoord;
   attribute vec3 a_normal;
@@ -153,7 +153,7 @@ var TERRAIN_VSHADER1 =
   varying vec3 v_fragPos;
 
   const int OCTAVES = 8;
-
+  const bool CALC_NORM = true;
   //
   // Description : Array and textureless GLSL 2D simplex noise function.
   //      Author : Ian McEwan, Ashima Arts.
@@ -225,21 +225,13 @@ var TERRAIN_VSHADER1 =
     g.yz = a0.yz * x12.xz + h.yz * x12.yw;
     return 130.0 * dot(m, g);
   }
-  const float P1 = 0.1;
-  const float P2 = 0.2;
-  const float P3 = 0.5;
-  const float P4 = 1.0;
 
-  float curve(float t) {
-    float invT = (1.0 - t);
-    float P = P1 * pow(invT,3.0) +
-      P2 * 3.0 * t * pow(invT, 2.0) +
-      P3 * 3.0 * invT * pow(t, 2.0) +
-      P4 * pow(t, 3.0);
-    return P;
-  }
+  float getHeight(vec2 v) {
+    float persistance = u_noise[0];
+    float lacunarity = u_noise[1];
+    float exponent = u_noise[2];
+    vec2 offset = u_mouse * 10.0;
 
-  float noise(vec2 v, vec2 offset, float persistance, float lacunarity, float exponent) {
     float freq = 0.005;
     float amplitude = 1.0;
     float noise_value = 0.0;
@@ -254,18 +246,29 @@ var TERRAIN_VSHADER1 =
     return noise_value;
   }
 
-  void main(){
-    float persistance = u_noise[0];
-    float lacunarity = u_noise[1];
-    float exponent = u_noise[2];
-    vec4 world_pos = u_model * a_position;
-    float noise_value = noise(world_pos.xz, u_mouse * 10.0, persistance, lacunarity, exponent);
-    vec3 new_position = world_pos.xyz + a_normal * u_displacement * noise_value;
+  //estimate normal based on central differences
+  vec3 getNormal(vec3 pos, vec2 diff) {
+    float hL = getHeight(pos.xz - diff.xy);
+    float hR = getHeight(pos.xz + diff.xy);
+    float hD = getHeight(pos.xz - diff.yx);
+    float hU = getHeight(pos.xz + diff.yx);
+    vec3 normal = normalize(vec3(hL - hR, 2.0, hD - hU)); //always assume normal towards positive Y axis
+    return normal;
+  }
 
+  void main(){
+    vec4 world_pos = u_model * a_position;
+    float height = getHeight(world_pos.xz);
+    vec3 new_position = world_pos.xyz + a_normal * u_displacement * height;
     gl_Position = u_projection * u_view * vec4(new_position, 1.0);
-    v_noise = noise_value;
+    v_noise = height;
     v_texCoord = a_texCoord;
-    v_normal = a_normal;
+    vec2 diff = vec2(10.0, 0.0);
+    if (CALC_NORM) {
+      v_normal = getNormal(world_pos.xyz, diff);
+    } else {
+      v_normal = (u_normalMatrix * vec4(a_normal, 1.0)).xyz;
+    }
     v_fragPos = new_position;
   }
 `;
@@ -273,36 +276,48 @@ var TERRAIN_VSHADER1 =
 var TERRAIN_FSHADER1 =
 `
 precision mediump float;
-uniform vec3 u_cameraPos;
 uniform vec3 u_terrain;
+uniform vec3 u_cameraPos;
 uniform float u_time;
 varying float v_noise;
 varying vec3 v_normal;
 varying vec2 v_texCoord;
 varying vec3 v_fragPos;
 
-const vec3 LIGHT_POSITION = vec3(0.0, 200.0, -10.0);
+const vec3 LIGHT_POSITION = vec3(0.0, 50.0, -50.0);
 const vec3 DIFFUSE_COLOR = vec3(0.01, 0.39, 0.41);
+const vec3 SPECULAR_COLOR = vec3(0.96, 0.95, 0.8);
+const bool LIGHTING_ENABLED = true;
+
 float rand(vec2 v){
     return fract(sin(dot(v ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
 vec3 calcLights() {
-  //ambient
-  vec3 base_color = vec3(0.01, 0.1, 0.89) * 0.5;
-  //diffuse
-  vec3 norm = normalize(v_normal);
-  vec3 light_dir = LIGHT_POSITION - v_fragPos;
-  float diffuse = max(dot(light_dir, norm), 0.0);
-  vec3 diffuse_color = DIFFUSE_COLOR * diffuse;
-  return base_color;
+  vec3 color = vec3(1.0);
+  if (LIGHTING_ENABLED) {
+    //ambient
+    vec3 baseColor = vec3(0.01, 0.1, 0.89) * 0.5;
+    //diffuse
+    vec3 norm = normalize(v_normal);
+    vec3 lightDir = normalize(LIGHT_POSITION - v_fragPos);
+    float diffuse = max(dot(lightDir, norm), 0.0);
+    vec3 diffuseColor = DIFFUSE_COLOR * diffuse;
+    //specular
+    vec3 viewDir = normalize(u_cameraPos - v_fragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float specular = pow(max(dot(reflectDir, viewDir), 0.0), 64.0);
+    vec3 specularColor = SPECULAR_COLOR * specular * 0.5;
+    color = baseColor + diffuseColor;
+  }
+  return color;
 }
 
 vec3 snow() {
-  vec3 snow_color = vec3(0.5) * v_noise;
-  //snow_color *= calcLights();
+  vec3 snow_color = vec3(0.5);
+  snow_color *= calcLights();
   vec2 v = v_fragPos.xz;
-  if (rand(v) > 0.998) {
+  if (rand(v) > 0.999) {
     snow_color += abs(sin(u_time + v.x*v.y)) * vec3(1.0);
   }
 
@@ -311,13 +326,13 @@ vec3 snow() {
 
 vec3 earth() {
   vec3 earth_color = vec3(0.44, 0.28, 0.24) * v_noise;
-  //earth_color *= calcLights();
+  earth_color *= calcLights();
   return earth_color;
 }
 
 vec3 water() {
-  vec3 water_color = vec3(0.0, 0.06, 0.3);
-  //water_color *= calcLights();
+  vec3 water_color = vec3(0.0, 0.06, 0.3) ;
+  water_color *= calcLights();
   return water_color;
 }
 
@@ -325,7 +340,7 @@ void main(){
   float water_level = u_terrain[0];
   float snow_level = u_terrain[2];
   vec3 color = earth();
-
+  vec3 light_dir = LIGHT_POSITION - v_fragPos;
   if (v_noise > snow_level) {
     color = snow();
   } else if (v_noise < water_level) {

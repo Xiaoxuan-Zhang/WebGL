@@ -12,10 +12,10 @@ var Camera = function() {
   this.front = new Float32Array([0, 0, -1]);
   this.right = this.getRight();
   this.yaw = -90.0;
-  this.pitch = -10.0;
+  this.pitch = 0.0;
   this.viewMatrix = new Matrix4();
   this.projectionMatrix = new Matrix4();
-  this.projectionMatrix.setPerspective(45, canvas.width/canvas.height, 0.1, 1000);
+  this.projectionMatrix.setPerspective(20, canvas.width/canvas.height,0.1, 1000);
   this.deltaTime = 0.0;
   this.lastTime = performance.now();
   this.rotationSpeed = 1.5;

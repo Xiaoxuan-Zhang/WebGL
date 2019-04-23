@@ -16,7 +16,7 @@ Globals for terrain
 */
 var g_terrain = {
   scale: 1,
-  mapSize: 257, //must be (2^n + 1)
+  mapSize: 129, //must be (2^n + 1)
   displacement: 15.0,
   water: 0.4,
   earth: 0.4,
@@ -54,7 +54,8 @@ function main() {
   }
   resizeCanvas();
   gl.enable(gl.DEPTH_TEST);
-  //gl.enable(gl.CULL_FACE);
+  gl.enable(gl.CULL_FACE);
+  gl.frontFace(gl.CW);
   addShaderPrograms();
   loadObjects();
   loadTextures();

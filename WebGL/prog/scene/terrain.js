@@ -19,9 +19,9 @@ var PCGTerrain = function(mapSize, mapScale, lodInfo) {
   this.lastViewPos = Object.assign({}, camera.position);
   let uniforms = {
     //u_sample: {type: "texture", value: g_texture["heightMap"]["diffuse"]},
-    u_displacement: {type: "f", value: g_terrain["displacement"]},
-    u_terrain: {type: "v3", value: [g_terrain["water"], 0.0, g_terrain["snow"]]},
-    u_noise: {type: "v3", value: [g_terrain["persistance"], g_terrain["lacunarity"], g_terrain["exponent"]]},
+    u_displacement: {type: "f", value: g_terrain.displacement},
+    u_terrain: {type: "v3", value: [g_terrain.water, 0.0, g_terrain.snow]},
+    u_noise: {type: "v3", value: [g_terrain.persistance, g_terrain.lacunarity, g_terrain.exponent]},
     u_mouse: {type:"v2", value: g_mousePos},
     u_time: {type:"f", value: performance.now()}
   }
@@ -69,16 +69,11 @@ PCGTerrain.prototype.render = function() {
 
 PCGTerrain.prototype.sendUniforms = function() {
   //update the latest parameters from GUI
-  this.material.uniforms.u_displacement.value = g_terrain["displacement"];
-  this.material.uniforms.u_terrain.value = [g_terrain["water"], 0.0, g_terrain["snow"]];
-  this.material.uniforms.u_noise.value = [g_terrain["persistance"], g_terrain["lacunarity"], g_terrain["exponent"]];
+  this.material.uniforms.u_displacement.value = g_terrain.displacement;
+  this.material.uniforms.u_terrain.value = [g_terrain.water, 0.0, g_terrain.snow];
+  this.material.uniforms.u_noise.value = [g_terrain.persistance, g_terrain.lacunarity, g_terrain.exponent];
   this.material.uniforms.u_time.value = performance.now() * 0.001;
-  if (g_terrain.updateMouse){
-    this.material.uniforms.u_mouse.value = g_mousePos;
-  } else {
-    this.material.uniforms.u_mouse.value = [0.0, 0.0];
-  }
-
+  this.material.uniforms.u_mouse.value = g_terrain.updateMouse? g_mousePos : [0.0, 0.0];
   this.material.sendUniformToGLSL();
 }
 
@@ -191,4 +186,10 @@ Terrain.prototype.updateLOD = function() {
       this.lastLodIndex = lodIdx;
     }
   }
+}
+
+var HeightMap = function(mapSize, mapScale, noiseFunction) {
+  this.mapSize = mapSize;
+  this.mapScale = mapScale;
+  this.noiseFunction = noiseFunction;
 }

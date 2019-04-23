@@ -42,7 +42,7 @@ class Material {
        }
        if (type == "f"){
          sendUniformFloatToGLSL(value, name);
-       } else if (type == "uint") {
+       } else if (type == "int") {
          sendUniformUintToGLSL(value, name);
        }
        else if (type == "texture") {
