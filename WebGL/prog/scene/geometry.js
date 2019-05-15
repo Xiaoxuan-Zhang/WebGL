@@ -17,12 +17,12 @@ class Geometry {
     this.indices = [];
     this.modelMatrix = new Matrix4(); // Model matrix applied to geometric object
     this.normalMatrix = new Matrix4();
-
+    this.bufferDataUpdated = {};
     this.attributes = {}; // List of attributes that might be including color, position...
     this.translateX = 0;
     this.translateY = 0;
     this.translateZ = 0;
-    this.scaleValue = 1.0;
+    this.scaleValue = [1.0, 1.0, 1.0];
     this.rotation = 0.0;
     this.rotationAxis = [0, 0, 1];
     this.autoRotate = false;
@@ -31,14 +31,20 @@ class Geometry {
 
     this.now = performance.now();
     if (material != null) {
-      addMaterial(material)
+      this.addMaterial(material)
     }
   }
   //Optional
   addMaterial(materialObj) {
     this.material = materialObj;
+    this.init();
   }
-
+  init() {
+    useShader(gl, this.material.shader);
+    this.bufferDataUpdated['Vertices'] = {buffer: createBufferData(new Float32Array(this.vertices)), dataCount: 3, binded: true};
+    this.bufferDataUpdated['UVs'] = {buffer: createBufferData(new Float32Array(this.UVs)), dataCount: 2, binded: true};
+    this.bufferDataUpdated['Normals'] = {buffer: createBufferData(new Float32Array(this.normals)), dataCount: 3, binded: true};
+  }
   /**
    * Add attributes to this geometry
    *
@@ -71,20 +77,20 @@ class Geometry {
    * Renders this Geometry within your webGL scene.
    */
   render() {
-    // Recommendations: sendUniformVec4ToGLSL(), tellGLSLToDrawCurrentBuffer(),
-    // and sendAttributeBufferToGLSL() are going to be useful here.
+
     useShader(gl, this.material.shader);
 
-    light.update();
+    light.sendUniforms();
+    camera.sendUniforms();
 
     if (this.vertices.length != 0) {
-      sendAttributeBufferToGLSL(new Float32Array(this.vertices), 3, "a_position");
+      sendAttributeBufferToGLSL(this.bufferDataUpdated['Vertices'].buffer, this.bufferDataUpdated['Vertices'].dataCount, "a_position");
     }
     if (this.normals.length != 0) {
-      sendAttributeBufferToGLSL(new Float32Array(this.normals), 3, "a_normal");
+      sendAttributeBufferToGLSL(this.bufferDataUpdated['Normals'].buffer, this.bufferDataUpdated['Normals'].dataCount, "a_normal");
     }
     if (this.UVs.length != 0) {
-      sendAttributeBufferToGLSL(new Float32Array(this.UVs), 2, "a_texCoord");
+      sendAttributeBufferToGLSL(this.bufferDataUpdated['UVs'].buffer, this.bufferDataUpdated['UVs'].dataCount, "a_texCoord");
     }
 
     this.material.sendUniformToGLSL();
@@ -108,7 +114,7 @@ class Geometry {
    */
   updateAnimation() {
     this.modelMatrix.setTranslate(this.translateX, this.translateY, this.translateZ);
-    this.modelMatrix.scale(this.scaleValue, this.scaleValue, this.scaleValue);
+    this.modelMatrix.scale(this.scaleValue[0], this.scaleValue[1], this.scaleValue[2]);
 
     if (this.autoRotate) {
       var elapsed = performance.now() - this.now;

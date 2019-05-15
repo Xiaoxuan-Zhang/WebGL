@@ -22,7 +22,7 @@ function initEventHandelers() {
     let rect = ev.target.getBoundingClientRect();
     x = (x - rect.left) * 2.0/canvas.width - 1.0;
     y = (y - rect.top) * -2.0/canvas.height + 1.0;
-    g_mousePos = [x, -y];
+    g_mousePos = [x, y];
   };
 
   document.onkeydown = function(ev){ keydown(ev); };

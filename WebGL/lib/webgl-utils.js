@@ -146,7 +146,7 @@ var setupWebGL = function(canvas, opt_attribs, opt_onError) {
  * @return {!WebGLContext} The created context.
  */
 var create3DContext = function(canvas, opt_attribs) {
-  var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+  var names = ["webgl2", "experimental-webgl", "webkit-3d", "moz-webgl"];
   var context = null;
   for (var ii = 0; ii < names.length; ++ii) {
     try {
@@ -182,10 +182,10 @@ if (!window.requestAnimationFrame) {
   })();
 }
 
-/** * ERRATA: 'cancelRequestAnimationFrame' renamed to 'cancelAnimationFrame' to reflect an update to the W3C Animation-Timing Spec. 
- * 
- * Cancels an animation frame request. 
- * Checks for cross-browser support, falls back to clearTimeout. 
+/** * ERRATA: 'cancelRequestAnimationFrame' renamed to 'cancelAnimationFrame' to reflect an update to the W3C Animation-Timing Spec.
+ *
+ * Cancels an animation frame request.
+ * Checks for cross-browser support, falls back to clearTimeout.
  * @param {number}  Animation frame request. */
 if (!window.cancelAnimationFrame) {
   window.cancelAnimationFrame = (window.cancelRequestAnimationFrame ||

@@ -16,17 +16,20 @@ function send2DTextureToGLSL(val, textureUnit, uniformName) {
   //    5. Send the texture unit (textureUnit not the one you found) to your
   //       uniform location.
 
-  let u_sample = gl.getUniformLocation(gl.program, uniformName);
-  if (!u_sample) {
+  let loc = gl.getUniformLocation(gl.program, uniformName);
+  if (!loc) {
     console.log('Failed to get the storage location of' + uniformName);
     return false;
   }
-  // Enable texture unit0
+
+  // Set the texture unit to the sampler
+  gl.uniform1i(loc, textureUnit);
+
+  // Enable texture unit
   gl.activeTexture(gl.TEXTURE0 + textureUnit);
+
   // Bind the texture object to the target
   gl.bindTexture(gl.TEXTURE_2D, val);
-  // Set the texture unit 0 to the sampler
-  gl.uniform1i(u_sample, 0);
 }
 
 /**
@@ -84,6 +87,24 @@ function create2DTexture(imgPath, magParam, minParam, wrapSParam, wrapTParam, ca
   // Tell the browser to load an image
   image.src = imgPath;
 }
+
+function createNullTexture(width, height, internalFormat, format, border, dataType, magParam, minParam, wrapSParam, wrapTParam) {
+  let texture = gl.createTexture();   // Create a texture object
+  if (!texture) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, null);
+  //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minParam);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magParam);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapSParam);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapTParam);
+  gl.bindTexture(gl.TEXTURE_2D, null);
+  return texture;
+}
+
 function createBufferData(data) {
   let newBuffer = gl.createBuffer();
   if (!newBuffer) {

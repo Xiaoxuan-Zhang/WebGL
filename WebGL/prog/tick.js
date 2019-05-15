@@ -15,4 +15,5 @@ function tick() {
   scene.updateAnimation();
   scene.render();
   requestAnimationFrame(tick, canvas);
+
 }

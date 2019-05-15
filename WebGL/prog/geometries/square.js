@@ -30,17 +30,17 @@ class Square extends Geometry {
       // Keeps your code clean :)
       let centerX = 0;
       let centerY = 0;
-      let size = 1;
-      this.vertices = [centerX - size, centerY + size, 0.0,
+      let size = 1.0;
+      this.vertices = [centerX - size, centerY - size, 0.0,
+                       centerX - size, centerY + size, 0.0,
+                       centerX + size, centerY + size, 0.0,
                        centerX + size, centerY + size, 0.0,
                        centerX + size, centerY - size, 0.0,
-                       centerX - size, centerY + size, 0.0,
-                       centerX + size, centerY - size, 0.0,
                        centerX - size, centerY - size, 0.0];
-      this.UVs = [0.0, 1.0,
-                  1.0, 1.0,
-                  1.0, 0.0,
+      this.UVs = [0.0, 0.0,
                   0.0, 1.0,
+                  1.0, 1.0,
+                  1.0, 1.0,
                   1.0, 0.0,
                   0.0, 0.0];
       this.normals = [0, 0, 1,

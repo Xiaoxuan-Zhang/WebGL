@@ -50,9 +50,9 @@ class Material {
            send2DTextureToGLSL(value, this.textureUnitCount, name);
            this.textureUnit[name] = this.textureUnitCount;
            this.textureUnitCount += 1;
-         } else {
-           send2DTextureToGLSL(value, this.textureUnit[name], name);
          }
+         send2DTextureToGLSL(value, this.textureUnit[name], name);
+
        } else if (type == "v2"){
          sendUniformVec2ToGLSL(value, name);
        } else if (type == "v3"){

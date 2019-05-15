@@ -18,14 +18,15 @@ var PCGTerrain = function(mapSize, mapScale, lodInfo) {
   this.bufferDataUpdated = {};
   this.lastViewPos = Object.assign({}, camera.position);
   let uniforms = {
-    //u_sample: {type: "texture", value: g_texture["heightMap"]["diffuse"]},
+    //u_sample: {type: "texture", value: g_texture['snow']['normal']},
     u_displacement: {type: "f", value: g_terrain.displacement},
-    u_terrain: {type: "v3", value: [g_terrain.water, 0.0, g_terrain.snow]},
+    u_terrain: {type: "v3", value: [g_terrain.water, g_terrain.earth, g_terrain.snow]},
     u_noise: {type: "v3", value: [g_terrain.persistance, g_terrain.lacunarity, g_terrain.exponent]},
-    u_mouse: {type:"v2", value: g_mousePos},
+    u_clip: {type:"v2", value: g_terrain.clip},
+    u_mouse: {type:"v2", value: [g_mousePos[0], -g_mousePos[1]]},
     u_time: {type:"f", value: performance.now()}
   }
-  this.material = new Material(uniforms, g_programs["Terrain"]);
+  this.material = new Material(uniforms, g_programs["Terrain2"]);
   this.init();
   this.updateTerrain();
 }
@@ -41,6 +42,7 @@ PCGTerrain.prototype.init = function() {
 }
 
 PCGTerrain.prototype.render = function() {
+
   // Tranform and draw call for each visible terrain mesh
   useShader(gl, this.material.shader);
   light.sendUniforms();
@@ -70,10 +72,11 @@ PCGTerrain.prototype.render = function() {
 PCGTerrain.prototype.sendUniforms = function() {
   //update the latest parameters from GUI
   this.material.uniforms.u_displacement.value = g_terrain.displacement;
-  this.material.uniforms.u_terrain.value = [g_terrain.water, 0.0, g_terrain.snow];
+  this.material.uniforms.u_terrain.value = [g_terrain.water, g_terrain.earth, g_terrain.snow];
   this.material.uniforms.u_noise.value = [g_terrain.persistance, g_terrain.lacunarity, g_terrain.exponent];
   this.material.uniforms.u_time.value = performance.now() * 0.001;
-  this.material.uniforms.u_mouse.value = g_terrain.updateMouse? g_mousePos : [0.0, 0.0];
+  this.material.uniforms.u_clip.value = g_terrain.clip;
+  this.material.uniforms.u_mouse.value = g_terrain.updateMouse? [g_mousePos[0], -g_mousePos[1]] : [0.0, 0.0];
   this.material.sendUniformToGLSL();
 }
 
@@ -186,10 +189,4 @@ Terrain.prototype.updateLOD = function() {
       this.lastLodIndex = lodIdx;
     }
   }
-}
-
-var HeightMap = function(mapSize, mapScale, noiseFunction) {
-  this.mapSize = mapSize;
-  this.mapScale = mapScale;
-  this.noiseFunction = noiseFunction;
 }
