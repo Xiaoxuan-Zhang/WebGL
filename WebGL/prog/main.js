@@ -17,7 +17,7 @@ Globals for terrain
 */
 var g_terrain = {
   scale: 1,
-  mapSize: 257, //must be (2^n + 1)
+  mapSize: 65, //must be (2^n + 1)
   displacement: 64.0,
   water: -0.01,
   earth: -0.5,
@@ -82,26 +82,26 @@ function addShaderPrograms()
   createShaderProgram('BasicLights', BASICLIGHTS_VSHADER1, BASICLIGHTS_FSHADER1);
   createShaderProgram('Texture', TEX_VSHADER1, TEX_FSHADER1);
   createShaderProgram('Custom', CUSTOM_VSHADER1, CUSTOM_FSHADER1);
-  createShaderProgram('Terrain', TERRAIN_VSHADER1, TERRAIN_FSHADER1);
-  createShaderProgram('Terrain2', TERRAIN_VSHADER2, TERRAIN_FSHADER2);
-  createShaderProgram('Background', BKG_VSHADER, BKG_FSHADER);
+  createShaderProgram('Terrain', TERRAIN_VSHADER2, TERRAIN_FSHADER2);
   createShaderProgram('Final', FINAL_VSHADER, FINAL_FSHADER);
+  createShaderProgram('Cubemap', CUBEMAP_VSHADER, CUBEMAP_FSHADER);
+  createShaderProgram('Skybox', SKYBOX_VSHADER, SKYBOX_FSHADER);
+  createShaderProgram('SkyboxQuad', SKYBOXQUAD_VSHADER, SKYBOXQUAD_FSHADER);
 }
 
 function loadTextures() {
   loadTextureFile('external/textures/wood.png', 'wood', 'diffuse');
   loadTextureFile('external/textures/SnowLightCoverB_N.jpg', 'snow', 'normal');
-  //loadTextureFile('external/textures/TeapotTex.png', 'teapot', 'diffuse');
+  loadCubemapTextureFiles('external/textures/skybox', 'jpg', 'skybox', 'skybox');
   //loadTextureFile('external/OBJ/h5uo4n0v569s-earth/4096_earth.jpg', 'earth', 'diffuse');
-  //loadTextureFile('external/OBJ/Cat-1/Cat_D.PNG', 'cat', 'diffuse');
-  //loadTextureFile('external/OBJ/Cat-1/Cat_S.PNG', 'cat', 'specular');
-  //loadTextureFile('external/OBJ/Cat-1/Cat_N.PNG', 'cat', 'normal');
+  loadTextureFile('external/OBJ/Cat-1/Cat_D.PNG', 'cat', 'diffuse');
+  loadTextureFile('external/OBJ/Cat-1/Cat_S.PNG', 'cat', 'specular');
+  loadTextureFile('external/OBJ/Cat-1/Cat_N.PNG', 'cat', 'normal');
   //loadTextureFile('external/textures/turbulence_bw.png', 'heightMap', 'diffuse');
 }
 
 function loadObjects () {
-  //loadObjectFile('external/OBJ/teapot.obj', 'teapot');
-  //loadObjectFile('external/OBJ/Cat-1/cat.obj', 'cat');
+  loadObjectFile('external/OBJ/Cat-1/cat.obj', 'cat');
   //loadObjectFile('external/OBJ/h5uo4n0v569s-earth/earth.obj', 'earth');
   //loadObjectFile('external/OBJ/jaguar.obj', 'jaguar');
 }
@@ -130,6 +130,13 @@ function textureLoadedCallback(name, type, textureObj) {
 function loadTextureFile(path, name, type) {
   createTask();
   create2DTexture(path, gl.LINEAR, gl.LINEAR, gl.REPEAT, gl.REPEAT, function(texture) {textureLoadedCallback(name, type, texture)});
+}
+
+function loadCubemapTextureFiles(path, imageFormat, name, type) {
+  for (let i = 0; i < 6; ++i) {
+    createTask();
+  }
+  createCubemapTexture(path, imageFormat, gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, function(texture) {textureLoadedCallback(name, type, texture)});
 }
 
 function objectFileLoadedCallback(name, textObj)

@@ -44,15 +44,22 @@ class Material {
          sendUniformFloatToGLSL(value, name);
        } else if (type == "int") {
          sendUniformUintToGLSL(value, name);
-       }
-       else if (type == "texture") {
+       } else if (type == "texture") {
          if (!(name in this.textureUnit)) {
            send2DTextureToGLSL(value, this.textureUnitCount, name);
            this.textureUnit[name] = this.textureUnitCount;
            this.textureUnitCount += 1;
+         } else {
+           send2DTextureToGLSL(value, this.textureUnit[name], name);
          }
-         send2DTextureToGLSL(value, this.textureUnit[name], name);
-
+       } else if (type == "cubemap") {
+         if (!(name in this.textureUnit)) {
+           sendCubemapToGLSL(value, this.textureUnitCount, name);
+           this.textureUnit[name] = this.textureUnitCount;
+           this.textureUnitCount += 1;
+         } else {
+           sendCubemapToGLSL(value, this.textureUnit[name], name);
+         }
        } else if (type == "v2"){
          sendUniformVec2ToGLSL(value, name);
        } else if (type == "v3"){

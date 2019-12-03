@@ -1,25 +1,29 @@
 /**
- * Specifies a Camera.
+ * Specifies a FPS Camera.
  *
  * @author "Xiaoxuan Zhang"
  * @this {Camera}
  */
 var Camera = function() {
-  this.position = new Float32Array([0.0, 10.0, 0.0]);
+  this.position = new Float32Array([0.0, 5.0, 10.0]);
   this.target = new Float32Array([0.0, 0.0, 0.0]);
   this.worldUp = new Float32Array([0, 1, 0]);
   this.up = new Float32Array([0, 1, 0]);
   this.front = new Float32Array([0, 0, -1]);
-  this.right = this.getRight();
+  this.right = new Float32Array([0, 0, 0]);
   this.yaw = -90.0;
-  this.pitch = 6.0;
+  this.pitch = -10.0;
+  this.fov = 40.0;
+  this.near = 0.1;
+  this.far = 500.0;
   this.viewMatrix = new Matrix4();
   this.projectionMatrix = new Matrix4();
-  this.projectionMatrix.setPerspective(20, canvas.width/canvas.height, 0.1, 1000);
+  this.projectionMatrix.setPerspective(this.fov, canvas.width/canvas.height, this.near, this.far);
+  this.viewProjectionInvMatrix = new Matrix4();
   this.deltaTime = 0.0;
   this.lastTime = performance.now();
   this.rotationSpeed = 1.5;
-  this.velocity = 5.0;
+  this.velocity = 2.0;
   this.update();
 }
 
@@ -47,6 +51,7 @@ Camera.prototype.move = function(direction) {
     this.position[1] -= this.right[1] * offset;
     this.position[2] -= this.right[2] * offset;
   }
+  this.updateViewMatrix();
 }
 
 /**
@@ -70,25 +75,29 @@ Camera.prototype.rotate = function(direction) {
 }
 
 Camera.prototype.update = function() {
-  let currTime = performance.now();
-  this.deltaTime = currTime - this.lastTime;
-  this.lastTime = currTime;
-  this.front[0] = Math.cos(this.yaw * Math.PI/180.0) * Math.cos(this.pitch * Math.PI/180.0);
-  this.front[1] = Math.sin(this.pitch * Math.PI/180.0);
-  this.front[2] = Math.sin(this.yaw * Math.PI/180.0) * Math.cos(this.pitch * Math.PI/180.0);
+  let cosPitch = Math.cos(this.pitch * Math.PI / 180.0);
+  let sinPitch = Math.sin(this.pitch * Math.PI / 180.0);
+  let cosYaw = Math.cos(this.yaw * Math.PI / 180.0);
+  let sinYaw = Math.sin(this.yaw * Math.PI / 180.0);
+
+  this.front[0] = cosYaw * cosPitch;
+  this.front[1] = sinPitch;
+  this.front[2] = sinYaw * cosPitch;
   this.front = this.normalize(this.front);
   this.getRight();
   this.getUp();
+  this.updateViewMatrix();
+  this.updateViewProjectionInvMatrix();
 }
 
 Camera.prototype.getTarget = function() {
-  //Front + Position
+  //for FPS, target = Front + Position
   let target = new Float32Array([0, 0, 0]);
   target[0] = this.front[0] + this.position[0];
   target[1] = this.front[1] + this.position[1];
   target[2] = this.front[2] + this.position[2];
   this.target = target;
-  return this.target
+  return this.target;
 }
 
 Camera.prototype.getFront = function() {
@@ -139,23 +148,23 @@ Camera.prototype.normalize = function(a) {
   return out;
 }
 
-Camera.prototype.getViewMatrix = function() {
+Camera.prototype.updateViewMatrix = function() {
   this.getTarget();
   this.viewMatrix.setLookAt(this.position[0], this.position[1], this.position[2],
-                      this.target[0], this.target[1], this.target[2], 0, 1, 0);
-  return this.viewMatrix;
+                      this.target[0], this.target[1], this.target[2], this.up[0], this.up[1], this.up[2]);
 }
 
-Camera.prototype.getProjectionMatrix = function() {
-  return this.projectionMatrix;
-}
-
-Camera.prototype.getCameraPosition = function() {
-  return this.position;
-}
-
-Camera.prototype.updateCameraMatrix = function() {
-  this.projectionMatrix.setPerspective(60, canvas.width/canvas.height, 0.1, 1000);
+Camera.prototype.updateViewProjectionInvMatrix = function() {
+  let m = new Matrix4();
+  m.set(this.projectionMatrix);
+  let v = new Matrix4();
+  v.set(this.viewMatrix);
+  v[12] = 0.0;
+  v[13] = 0.0;
+  v[14] = 0.0;
+  v[15] = 1.0;
+  m.concat(v);
+  this.viewProjectionInvMatrix.setInverseOf(m);
 }
 
 Camera.prototype.getViewDistance = function(target) {
@@ -169,10 +178,4 @@ Camera.prototype.getViewDistanceXZ = function(target) {
   let distance = Math.sqrt(Math.pow((target[0] - this.position[0]),2)
                 + Math.pow((target[2] - this.position[2]),2));
   return distance;
-}
-
-Camera.prototype.sendUniforms = function() {
-  sendUniformMat4ToGLSL(this.getViewMatrix(), 'u_view');
-  sendUniformMat4ToGLSL(this.getProjectionMatrix(), 'u_projection');
-  sendUniformVec3ToGLSL(this.getCameraPosition(), 'u_cameraPos');
 }

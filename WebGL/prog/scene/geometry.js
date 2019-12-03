@@ -77,12 +77,12 @@ class Geometry {
    * Renders this Geometry within your webGL scene.
    */
   render() {
-
     useShader(gl, this.material.shader);
-
-    light.sendUniforms();
-    camera.sendUniforms();
-
+    /*
+     gl.BindVertexArray(this->VAO);
+     gl.DrawArrays(GL_TRIANGLES, 0, this->numOfVertices);
+     gl.BindVertexArray(0);
+    */
     if (this.vertices.length != 0) {
       sendAttributeBufferToGLSL(this.bufferDataUpdated['Vertices'].buffer, this.bufferDataUpdated['Vertices'].dataCount, "a_position");
     }
@@ -92,20 +92,14 @@ class Geometry {
     if (this.UVs.length != 0) {
       sendAttributeBufferToGLSL(this.bufferDataUpdated['UVs'].buffer, this.bufferDataUpdated['UVs'].dataCount, "a_texCoord");
     }
-
     this.material.sendUniformToGLSL();
 
-    sendUniformMat4ToGLSL(this.modelMatrix, "u_model");
-    sendUniformMat4ToGLSL(camera.getViewMatrix(), 'u_view');
-    sendUniformMat4ToGLSL(camera.getProjectionMatrix(), 'u_projection');
-    sendUniformVec3ToGLSL(new Float32Array(camera.getCameraPosition()), 'u_cameraPos');
+    //sendUniformMat4ToGLSL(this.modelMatrix, "u_model");
+    //sendUniformMat4ToGLSL(this.normalMatrix, 'u_normalMatrix');
 
-    this.normalMatrix.setInverseOf(this.modelMatrix);
-    this.normalMatrix.transpose();
-    sendUniformMat4ToGLSL(this.normalMatrix, 'u_normalMatrix');
-
+    light.sendUniforms();
+    //camera.sendUniforms();
     tellGLSLToDrawArrays(this.vertices.length/3);
-
   }
 
   /**
@@ -125,6 +119,8 @@ class Geometry {
     } else {
       this.modelMatrix.rotate(this.rotation, this.rotationAxis[0], this.rotationAxis[1], this.rotationAxis[2]);
     }
+    this.normalMatrix.setInverseOf(this.modelMatrix);
+    this.normalMatrix.transpose();
   }
 
 }

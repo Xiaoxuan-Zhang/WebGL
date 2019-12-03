@@ -9,9 +9,6 @@ class Square extends Geometry {
    * Constructor for Square.
    *
    * @constructor
-   * @param {Number} size The size of the square drawn
-   * @param {Number} centerX The center x-position of the square
-   * @param {Number} centerY The center y-position of the square
    */
   constructor() {
     // Recommendations: Remember that Square is a subclass of Geometry.
@@ -26,22 +23,17 @@ class Square extends Geometry {
    * @private Generate a unit square
    */
   generateSquareVertices() {
-      // Recommendations: Might want to call this within your Square constructor.
-      // Keeps your code clean :)
-      let centerX = 0;
-      let centerY = 0;
-      let size = 1.0;
-      this.vertices = [centerX - size, centerY - size, 0.0,
-                       centerX - size, centerY + size, 0.0,
-                       centerX + size, centerY + size, 0.0,
-                       centerX + size, centerY + size, 0.0,
-                       centerX + size, centerY - size, 0.0,
-                       centerX - size, centerY - size, 0.0];
+      this.vertices = [-1.0, -1.0, 0.0,
+                       1.0, -1.0, 0.0,
+                       1.0, 1.0, 0.0,
+                       1.0, 1.0, 0.0,
+                       -1.0, 1.0, 0.0,
+                       -1.0, -1.0, 0.0];
       this.UVs = [0.0, 0.0,
-                  0.0, 1.0,
-                  1.0, 1.0,
-                  1.0, 1.0,
                   1.0, 0.0,
+                  1.0, 1.0,
+                  1.0, 1.0,
+                  0.0, 1.0,
                   0.0, 0.0];
       this.normals = [0, 0, 1,
                       0, 0, 1,

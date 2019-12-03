@@ -9,101 +9,189 @@ class Cube extends Geometry {
    * Constructor for cube.
    *
    * @constructor
-   * @param {Number} size The size of the cube drawn
-   * @param {Number} centerX The center x-position of the cube
-   * @param {Number} centerY The center y-position of the cube
    */
-  constructor(size, centerX, centerY) {
-    //
-    // YOUR CODE HERE
-    //
-
+  constructor() {
     // Recommendations: Remember that cube is a subclass of Geometry.
     // "super" keyword can come in handy when minimizing code reuse.
     super();
-    this.vertices = this.generateCubeVertices(size, centerX, centerY, 0.0);
+    this.generateCubeVertices();
   }
 
   /**
    * Generates the vertices of the cube.
    *
    * @private
-   * @param {Number} size The size of the cube drawn
-   * @param {Number} centerX The center x-position of the cube
-   * @param {Number} centerY The center y-position of the cube
-   * @param {Number} centerZ The center z-position of the cube
-   * @param {Array} color a color for this geometry, if null, generate random color for each vertex
    */
-  generateCubeVertices(size, centerX, centerY, centerZ) {
+  generateCubeVertices() {
     /*
-      4- - -5
+      7- - -6
      /|    /|
-    0- - -1 |
+    3- - -2 |
     | |   | |
-    | 7- -|-6
+    | 4- -|-5
     |/    |/
-    3- - -2
+    0- - -1
   */
-    var vertices = [
-      //front
-      new Vertex(centerX - size, centerY + size, centerZ + size, [0.0, 1.0], this.color), //0
-      new Vertex(centerX + size, centerY + size, centerZ + size, [1.0, 1.0], this.color), //1
-      new Vertex(centerX + size, centerY - size, centerZ + size, [1.0, 0.0], this.color), //2
 
-      new Vertex(centerX - size, centerY + size, centerZ + size, [0.0, 1.0], this.color), //0
-      new Vertex(centerX + size, centerY - size, centerZ + size, [1.0, 0.0], this.color), //2
-      new Vertex(centerX - size, centerY - size, centerZ + size, [0.0, 0.0], this.color), //3
+    this.vertices = [
+      //back
+      -1.0, -1.0, -1.0, //4
+      1.0, 1.0, -1.0, //6
+      1.0, -1.0, -1.0, //5
+
+      1.0, 1.0, -1.0, //6
+      -1.0, -1.0, -1.0, //4
+      -1.0, 1.0, -1.0, //7
+
+      //front
+      -1.0, -1.0, 1.0, //0
+      1.0, -1.0, 1.0, //1
+      1.0, 1.0, 1.0, //2
+
+      1.0, 1.0, 1.0, //2
+      -1.0, 1.0, 1.0, //3
+      -1.0, -1.0, 1.0, //0
 
       //left
-      new Vertex(centerX - size, centerY + size, centerZ + size, [1.0, 1.0], this.color), //0
-      new Vertex(centerX - size, centerY - size, centerZ + size, [1.0, 0.0], this.color), //3
-      new Vertex(centerX - size, centerY - size, centerZ - size, [0.0, 0.0], this.color), //7
+      -1.0, 1.0, 1.0, //3
+      -1.0, 1.0, -1.0, //7
+      -1.0, -1.0, -1.0, //4
 
-      new Vertex(centerX - size, centerY + size, centerZ + size, [1.0, 1.0], this.color), //0
-      new Vertex(centerX - size, centerY - size, centerZ - size, [0.0, 0.0], this.color), //7
-      new Vertex(centerX - size, centerY + size, centerZ - size, [0.0, 1.0], this.color), //4
+      -1.0, -1.0, -1.0, //4
+      -1.0, -1.0, 1.0, //0
+      -1.0, 1.0, 1.0,  //3
 
       //right
-      new Vertex(centerX + size, centerY + size, centerZ + size, [0.0, 1.0], this.color), //1
-      new Vertex(centerX + size, centerY + size, centerZ - size, [1.0, 1.0], this.color), //5
-      new Vertex(centerX + size, centerY - size, centerZ - size, [1.0, 0.0], this.color), //6
+      1.0, 1.0, 1.0, //2
+      1.0, -1.0, -1.0, //5
+      1.0, 1.0, -1.0, //6
 
-      new Vertex(centerX + size, centerY + size, centerZ + size, [0.0, 1.0], this.color), //1
-      new Vertex(centerX + size, centerY - size, centerZ - size, [1.0, 0.0], this.color), //6
-      new Vertex(centerX + size, centerY - size, centerZ + size, [0.0, 0.0], this.color), //2
-
-      //top
-      new Vertex(centerX - size, centerY + size, centerZ + size, [0.0, 0.0], this.color), //0
-      new Vertex(centerX - size, centerY + size, centerZ - size, [0.0, 1.0], this.color), //4
-      new Vertex(centerX + size, centerY + size, centerZ - size, [1.0, 1.0], this.color), //5
-
-      new Vertex(centerX - size, centerY + size, centerZ + size, [0.0, 0.0], this.color), //0
-      new Vertex(centerX + size, centerY + size, centerZ - size, [1.0, 1.0], this.color), //5
-      new Vertex(centerX + size, centerY + size, centerZ + size, [1.0, 0.0], this.color), //1
+      1.0, -1.0, -1.0, //5
+      1.0, 1.0, 1.0, //2
+      1.0, -1.0, 1.0, //1
 
       //bottom
-      new Vertex(centerX - size, centerY - size, centerZ + size, [0.0, 1.0], this.color), //3
-      new Vertex(centerX - size, centerY - size, centerZ - size, [0.0, 0.0], this.color), //7
-      new Vertex(centerX + size, centerY - size, centerZ - size, [1.0, 0.0], this.color), //6
+      -1.0, -1.0, -1.0, //4
+      1.0, -1.0, -1.0, //5
+      1.0, -1.0, 1.0, //1
 
-      new Vertex(centerX - size, centerY - size, centerZ + size, [0.0, 1.0], this.color), //3
-      new Vertex(centerX + size, centerY - size, centerZ - size, [1.0, 0.0], this.color), //6
-      new Vertex(centerX + size, centerY - size, centerZ + size, [1.0, 1.0], this.color), //2
+      1.0, -1.0, 1.0, //1
+      -1.0, -1.0, 1.0, //0
+      -1.0, -1.0, -1.0, //4
 
-      //back
-      new Vertex(centerX - size, centerY + size, centerZ - size, [1.0, 1.0], this.color), //4
-      new Vertex(centerX + size, centerY + size, centerZ - size, [0.0, 1.0], this.color), //5
-      new Vertex(centerX + size, centerY - size, centerZ - size, [0.0, 0.0], this.color), //6
+      //top
+      -1.0, 1.0, -1.0, //7
+      1.0, 1.0, 1.0, //2
+      1.0, 1.0, -1.0, //6
 
-      new Vertex(centerX - size, centerY + size, centerZ - size, [1.0, 1.0], this.color), //4
-      new Vertex(centerX + size, centerY - size, centerZ - size, [0.0, 0.0], this.color), //6
-      new Vertex(centerX - size, centerY - size, centerZ - size, [1.0, 0.0], this.color) //7
+      1.0, 1.0, 1.0, //2
+      -1.0, 1.0, -1.0, //7
+      -1.0, 1.0, 1.0 //3
 
     ];
-    return vertices;
-  }
+    this.UVs = [
+      //back
+      0.0, 0.0, //4
+      1.0, 1.0, //6
+      1.0, 0.0, //5
 
-  generateUVCoordinates() {
+      1.0, 1.0, //6
+      0.0, 0.0, //4
+      0.0, 1.0, //7
 
+      //front
+      0.0, 0.0, //0
+      1.0, 0.0, //1
+      1.0, 1.0, //2
+
+      1.0, 1.0, //2
+      0.0, 1.0, //3
+      0.0, 0.0, //0
+
+      //left
+      1.0, 0.0, //3
+      1.0, 1.0, //7
+      0.0, 1.0, //4
+
+      0.0, 1.0, //4
+      0.0, 0.0, //0
+      1.0, 0.0, //3
+
+      //right
+      1.0, 0.0, //2
+      0.0, 1.0, //5
+      1.0, 1.0, //6
+
+      0.0, 1.0, //5
+      1.0, 0.0, //2
+      0.0, 0.0, //1
+
+      //bottom
+      0.0, 1.0, //4
+      1.0, 1.0, //5
+      1.0, 0.0, //1
+
+      1.0, 0.0, //1
+      0.0, 0.0, //0
+      0.0, 1.0, //4
+
+      //top
+      0.0, 1.0, //7
+      1.0, 0.0, //2
+      1.0, 1.0, //6
+
+      1.0, 0.0, //2
+      0.0, 1.0, //7
+      0.0, 0.0 //3
+    ];
+    this.normals = [
+      //back
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+
+      //front
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+
+      //left
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0,
+
+      //right
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+
+      //bottom
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+
+      //top
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0
+    ];
   }
 }

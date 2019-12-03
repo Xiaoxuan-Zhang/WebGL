@@ -14,9 +14,6 @@ class Triangle extends Geometry {
    * @param {Number} centerY The center y-position of the triangle
    */
   constructor(size, centerX, centerY) {
-    //
-    // YOUR CODE HERE
-    //
 
     // Recommendations: Remember that Triangle is a subclass of Geometry.
     // "super" keyword can come in handy when minimizing code reuse.
