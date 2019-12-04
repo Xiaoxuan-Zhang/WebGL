@@ -460,7 +460,7 @@ const vec3 DIFFUSE_COLOR = vec3(1.0, 1.0, 0.7);
 const vec3 SPECULAR_COLOR = ICE_BLUE; //vec3(1.0, 1.0, 1.0);
 #define LIGHTING_ENABLED 1
 
-float rand(vec2 v){
+float rand(vec2 v) {
     return fract(sin(dot(v ,vec2(12.9898,78.233))) * 43758.5453);
 }
 

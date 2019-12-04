@@ -120,7 +120,7 @@ function addObjects() {
   addFinalQuad();
   addPCGSky();
   //addSkybox();
-  addCat();
+  //addCat();
   //addFloor();
   //addCube();
 

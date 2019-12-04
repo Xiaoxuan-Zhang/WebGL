@@ -92,7 +92,7 @@ function addShaderPrograms()
 
 function loadTextures() {
   loadTextureFile('external/textures/wood.png', 'wood', 'diffuse');
-  loadTextureFile('external/textures/SnowLightCoverB_N.jpg', 'snow', 'normal');
+  //loadTextureFile('external/textures/SnowLightCoverB_N.jpg', 'snow', 'normal');
   loadCubemapTextureFiles('external/textures/Yokohama3', 'jpg', 'skybox', 'skybox');
   //loadTextureFile('external/OBJ/h5uo4n0v569s-earth/4096_earth.jpg', 'earth', 'diffuse');
   loadTextureFile('external/OBJ/Cat-1/Cat_D.PNG', 'cat', 'diffuse');
