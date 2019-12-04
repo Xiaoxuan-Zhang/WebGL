@@ -61,11 +61,20 @@ Scene.prototype.updateAnimation = function() {
   this.sceneObjects.forEach(function(object) {
     object.updateAnimation();
   });
+
   this.geometries.forEach(function(geometry){
     if (geometry.visible) {
       geometry.updateAnimation();
     }
   });
+
+  if (this.skybox) {
+    this.skybox.updateAnimation();
+  }
+
+  if (this.final) {
+    this.final.updateAnimation();
+  }
 }
 
 /**
@@ -92,7 +101,6 @@ Scene.prototype.render = function() {
   });
   gl.flush();
 
-
   if (this.skybox != null) {
     gl.disable(gl.CULL_FACE);
     gl.depthFunc(gl.LEQUAL);
@@ -109,6 +117,7 @@ Scene.prototype.render = function() {
   if (this.final != null) {
     this.final.render();
   }
+
   // let duration = Math.round(performance.now() - start);
   // g_guiInfo.fps = 1000/duration;
 }
@@ -182,6 +191,9 @@ function addCube() {
 function addFinalQuad() {
   let geo = new Square();
   let uniforms = {
+    u_near: {type: "f", value: camera.near},
+    u_far: {type: "f", value: camera.far},
+    u_fog: {type: "f", value: g_terrain["fogAmount"]},
     u_sample: {type: "texture", value: g_texture['framebuffer']['color']},
     u_depth: {type: "texture", value: g_texture['framebuffer']['depth']},
   };

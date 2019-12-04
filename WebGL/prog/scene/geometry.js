@@ -117,6 +117,9 @@ class Geometry {
     }
     this.normalMatrix.setInverseOf(this.modelMatrix);
     this.normalMatrix.transpose();
+    if (this.material.uniforms["u_fog"]) {
+      this.material.uniforms["u_fog"].value = g_terrain.fogAmount;
+    }
   }
 
 }

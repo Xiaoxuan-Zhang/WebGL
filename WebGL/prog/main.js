@@ -26,6 +26,7 @@ var g_terrain = {
   lacunarity: 2.0,
   exponent: 2.5,
   clip: [-100.0, 100.0],
+  fogAmount: 2.2,
   updateMouse: false
 };
 /**
@@ -195,12 +196,12 @@ function setupGUI() {
 
   let terrain = gui.addFolder('Terrain');
   terrain.add(g_terrain, 'displacement', 0.0, 300.0).listen();
-  //terrain.add(g_terrain, 'water', -2.0, 2.0).listen();
   terrain.add(g_terrain, 'earth', -2.0, 2.0).listen();
   terrain.add(g_terrain, 'snow', -2.0, 3.0).listen();
   terrain.add(g_terrain, 'persistance', 0.0, 1.0).listen();
   terrain.add(g_terrain, 'lacunarity', 1.0, 3.0).listen();
   terrain.add(g_terrain, 'exponent', 0.0, 4.0).listen();
+  terrain.add(g_terrain, 'fogAmount', 0.1, 5.0).listen();
   //terrain.add(g_terrain, 'clip', -5.0, 5.0).listen();
   terrain.add(g_terrain, 'updateMouse');
   terrain.open();

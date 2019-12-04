@@ -549,13 +549,30 @@ var FINAL_FSHADER =
 precision mediump float;
 uniform sampler2D u_sample;
 uniform sampler2D u_depth;
+uniform float u_near;
+uniform float u_far;
+uniform float u_fog;
 varying vec2 v_texCoord;
 varying vec3 v_normal;
 
-void main(){
-  vec4 texColor = texture2D(u_sample, v_texCoord);
+float perspectiveDepth() {
   vec4 texDepth = texture2D(u_depth, v_texCoord);
-  vec3 color = texColor.rgb;
+  float depth = texDepth.r;
+  float z = depth * 2.0 - 1.0; // Back to NDC
+  depth = (2.0 * u_near * u_far) / (u_far + u_near - z * (u_far - u_near));
+  depth /= u_far;
+  return depth;
+}
+void main(){
+  vec3 texColor = texture2D(u_sample, v_texCoord).rgb;
+  float depth = perspectiveDepth();
+  //float depth = texture2D(u_depth, v_texCoord).r;
+  vec3 color = vec3(0.0);
+  vec3 fogColor = vec3(0.9);
+  float b = u_fog;
+  float fogAmount = 1.0 - exp( -depth * depth * b);
+  fogAmount = clamp(fogAmount, 0.0, 1.0);
+  color = mix(texColor, fogColor, fogAmount);
   gl_FragColor = vec4(color, 1.0);
 
 }
