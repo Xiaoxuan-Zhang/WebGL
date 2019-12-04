@@ -95,14 +95,14 @@ function loadTextures() {
   //loadTextureFile('external/textures/SnowLightCoverB_N.jpg', 'snow', 'normal');
   loadCubemapTextureFiles('external/textures/Yokohama3', 'jpg', 'skybox', 'skybox');
   //loadTextureFile('external/OBJ/h5uo4n0v569s-earth/4096_earth.jpg', 'earth', 'diffuse');
-  loadTextureFile('external/OBJ/Cat-1/Cat_D.PNG', 'cat', 'diffuse');
-  loadTextureFile('external/OBJ/Cat-1/Cat_S.PNG', 'cat', 'specular');
-  loadTextureFile('external/OBJ/Cat-1/Cat_N.PNG', 'cat', 'normal');
+  // loadTextureFile('external/OBJ/Cat-1/Cat_D.PNG', 'cat', 'diffuse');
+  // loadTextureFile('external/OBJ/Cat-1/Cat_S.PNG', 'cat', 'specular');
+  // loadTextureFile('external/OBJ/Cat-1/Cat_N.PNG', 'cat', 'normal');
   //loadTextureFile('external/textures/turbulence_bw.png', 'heightMap', 'diffuse');
 }
 
 function loadObjects () {
-  loadObjectFile('external/OBJ/Cat-1/cat.obj', 'cat');
+  //loadObjectFile('external/OBJ/Cat-1/cat.obj', 'cat');
   //loadObjectFile('external/OBJ/h5uo4n0v569s-earth/earth.obj', 'earth');
   //loadObjectFile('external/OBJ/jaguar.obj', 'jaguar');
 }
