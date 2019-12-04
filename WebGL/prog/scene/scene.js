@@ -75,21 +75,10 @@ Scene.prototype.render = function() {
   //Render to framebuffer
 
   // //first pass
-  // //draw background
   // gl.bindFramebuffer(gl.FRAMEBUFFER, g_frameBuffer['first']);
-  // gl.disable(gl.DEPTH_TEST);
-  // gl.disable(gl.CULL_FACE);
   // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  //
-  // if (this.background != null) {
-  //   this.background.render();
-  //   gl.flush();
-  // }
-  //
-  // gl.enable(gl.DEPTH_TEST);
-  // gl.enable(gl.CULL_FACE);
-  // gl.frontFace(gl.CW);
+  // gl.disable(gl.CULL_FACE);
   // g_terrain.clip = [-100.0, 100.0];
   // this.sceneObjects.forEach(function(object) {
   //   object.render();
@@ -132,7 +121,6 @@ Scene.prototype.render = function() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  gl.disable(gl.CULL_FACE);
   this.geometries.forEach(function(geometry){
     if (geometry.visible) {
       geometry.render();
@@ -140,9 +128,11 @@ Scene.prototype.render = function() {
   });
 
   if (this.skybox != null) {
+    gl.disable(gl.CULL_FACE);
     gl.depthFunc(gl.LEQUAL);
     this.skybox.render();
     gl.depthFunc(gl.LESS);
+    gl.enable(gl.CULL_FACE);
   }
   // let duration = Math.round(performance.now() - start);
   // g_guiInfo.fps = 1000/duration;
@@ -152,13 +142,14 @@ Scene.prototype.render = function() {
 * For debug
 */
 function addObjects() {
-  addSkybox();
-  addCat();
-  // addFloor();
+  addPCGSky();
+  //addSkybox();
+  //addCat();
+  //addFloor();
   //addCube();
-  // addFinalQuad();
-  // addReflectQuad();
-  // addRefractQuad();
+  //addFinalQuad();
+  //addReflectQuad();
+  //addRefractQuad();
   //addPCGTerrain();
 
 }
@@ -171,8 +162,6 @@ function addCat() {
     u_projection: {type: "mat4", value: camera.projectionMatrix},
     u_normalMatrix: {type: "mat4", value: geo.normalMatrix},
     u_cameraPos: {type: 'v3', value: camera.position},
-    u_lightPos: {type: 'v3', value: light.position},
-    u_specularColor: {type: 'v3', value: light.specularColor},
     u_sample: {type: "texture", value: g_texture["cat"]["diffuse"]},
     u_specular: {type: "texture", value: g_texture["cat"]["specular"]},
     u_normal: {type: "texture", value: g_texture["cat"]["normal"]},
@@ -255,28 +244,27 @@ function addFinalQuad() {
   scene.addGeometry(geo);
 }
 
-// function addSkybox() {
-//   var geo = new Cube();
-//   var uniforms = {
-//     //u_model: {type: "mat4", value: geo.modelMatrix},
-//     u_view: {type: "mat4", value: camera.viewMatrix},
-//     u_projection: {type: "mat4", value: camera.projectionMatrix},
-//     //u_viewProjectInvMatrix: {type: "mat4", value: camera.viewProjectionInvMatrix},
-//     u_cubemap : {type: "cubemap", value: g_texture['skybox']['skybox']}
-//   };
-//   var material = new Material(uniforms, g_programs["Skybox"]);
-//
-//   geo.addMaterial(material);
-//   scene.skybox = geo;
-// }
-
 function addSkybox() {
+  var geo = new Cube();
+  var uniforms = {
+    //u_model: {type: "mat4", value: geo.modelMatrix},
+    u_view: {type: "mat4", value: camera.viewMatrix},
+    u_projection: {type: "mat4", value: camera.projectionMatrix},
+    u_cubemap : {type: "cubemap", value: g_texture['skybox']['skybox']}
+  };
+  var material = new Material(uniforms, g_programs["Skybox"]);
+  geo.addMaterial(material);
+  scene.skybox = geo;
+}
+
+function addPCGSky() {
   var geo = new Square();
   var uniforms = {
     u_viewProjectInvMatrix: {type: "mat4", value: camera.viewProjectionInvMatrix},
-    u_cubemap : {type: "cubemap", value: g_texture['skybox']['skybox']}
+    u_cubemap: {type: "cubemap", value: g_texture['skybox']['skybox']},
+    u_time: {type: "t", value: 0.0}
   };
-  var material = new Material(uniforms, g_programs["SkyboxQuad"]);
+  var material = new Material(uniforms, g_programs["PCGSky"]);
 
   geo.addMaterial(material);
   scene.skybox = geo;

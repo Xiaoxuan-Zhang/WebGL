@@ -86,13 +86,13 @@ function addShaderPrograms()
   createShaderProgram('Final', FINAL_VSHADER, FINAL_FSHADER);
   createShaderProgram('Cubemap', CUBEMAP_VSHADER, CUBEMAP_FSHADER);
   createShaderProgram('Skybox', SKYBOX_VSHADER, SKYBOX_FSHADER);
-  createShaderProgram('SkyboxQuad', SKYBOXQUAD_VSHADER, SKYBOXQUAD_FSHADER);
+  createShaderProgram('PCGSky', SKYBOXQUAD_VSHADER, SKYBOXQUAD_FSHADER);
 }
 
 function loadTextures() {
   loadTextureFile('external/textures/wood.png', 'wood', 'diffuse');
   loadTextureFile('external/textures/SnowLightCoverB_N.jpg', 'snow', 'normal');
-  loadCubemapTextureFiles('external/textures/skybox', 'jpg', 'skybox', 'skybox');
+  loadCubemapTextureFiles('external/textures/Yokohama3', 'jpg', 'skybox', 'skybox');
   //loadTextureFile('external/OBJ/h5uo4n0v569s-earth/4096_earth.jpg', 'earth', 'diffuse');
   loadTextureFile('external/OBJ/Cat-1/Cat_D.PNG', 'cat', 'diffuse');
   loadTextureFile('external/OBJ/Cat-1/Cat_S.PNG', 'cat', 'specular');

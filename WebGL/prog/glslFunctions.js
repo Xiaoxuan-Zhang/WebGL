@@ -101,13 +101,12 @@ function create2DTexture(imgPath, magParam, minParam, wrapSParam, wrapTParam, ca
       return false;
     }
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minParam);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magParam);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapSParam);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapTParam);
-
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
     callback(texture);
   };
   // Tell the browser to load an image
@@ -138,34 +137,43 @@ function createCubemapTexture(imgPath, imageFormat, magParam, minParam, wrapPara
                   imgPath + '/front.' + imageFormat,
                   imgPath + '/back.' + imageFormat];
 
+  var faces = [["right." + imageFormat, gl.TEXTURE_CUBE_MAP_POSITIVE_X],
+				 ["left." + imageFormat, gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
+				 ["top." + imageFormat, gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
+				 ["bottom." + imageFormat, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
+				 ["front." + imageFormat, gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
+				 ["back." + imageFormat, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
+
   let texture = gl.createTexture();   // Create a texture object
   if (!texture) {
     console.log('Failed to create the texture object');
     return false;
   }
-  for (var i = 0; i < imageList.length; ++i) {
+  for (var i = 0; i < faces.length; ++i) {
+    let face = faces[i][1];
     let imageObj = new Image();  // Create the image object
     if (!imageObj) {
       console.log('Failed to create the image object');
       return false;
     }
-    imageObj.customData = {texId: texture, imageId: i,
+    imageObj.customData = {texId: texture, imageId: i, faceId: face,
                           minFilter: minParam, magFilter: magParam,
                           wrap: wrapParam};
     // Register the event handler to be called on loading an image
     imageObj.onload = function(){
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.customData.texId);
-      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + this.customData.imageId, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, imageObj);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
       gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+      gl.texImage2D(this.customData.faceId, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, imageObj);
+      //gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
       callback(this.customData.texId);
     };
     // Tell the browser to load an image
-    imageObj.src = imageList[i];
+    imageObj.src = imgPath + '/' + faces[i][0];
   }
 }
 

@@ -94,11 +94,7 @@ class Geometry {
     }
     this.material.sendUniformToGLSL();
 
-    //sendUniformMat4ToGLSL(this.modelMatrix, "u_model");
-    //sendUniformMat4ToGLSL(this.normalMatrix, 'u_normalMatrix');
-
     light.sendUniforms();
-    //camera.sendUniforms();
     tellGLSLToDrawArrays(this.vertices.length/3);
   }
 

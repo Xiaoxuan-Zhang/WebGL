@@ -5,14 +5,14 @@
  * @this {Camera}
  */
 var Camera = function() {
-  this.position = new Float32Array([0.0, 5.0, 10.0]);
+  this.position = new Float32Array([0.0, 20.0, 10.0]);
   this.target = new Float32Array([0.0, 0.0, 0.0]);
   this.worldUp = new Float32Array([0, 1, 0]);
   this.up = new Float32Array([0, 1, 0]);
   this.front = new Float32Array([0, 0, -1]);
   this.right = new Float32Array([0, 0, 0]);
   this.yaw = -90.0;
-  this.pitch = -10.0;
+  this.pitch = -20.0;
   this.fov = 40.0;
   this.near = 0.1;
   this.far = 500.0;
@@ -154,17 +154,23 @@ Camera.prototype.updateViewMatrix = function() {
                       this.target[0], this.target[1], this.target[2], this.up[0], this.up[1], this.up[2]);
 }
 
+/*
+* For skybox, we want to transform each pixel on our quad to a direction in the world that the camera is looking towards.
+So instead of using projection * view matrix to transform world space to camera space, we take the inverse of projectionViewMatrix.
+And since we only care about the direction (orientation), we ignore the translation part.
+*/
 Camera.prototype.updateViewProjectionInvMatrix = function() {
   let m = new Matrix4();
   m.set(this.projectionMatrix);
   let v = new Matrix4();
   v.set(this.viewMatrix);
+  //remove translation
   v[12] = 0.0;
   v[13] = 0.0;
   v[14] = 0.0;
   v[15] = 1.0;
-  m.concat(v);
-  this.viewProjectionInvMatrix.setInverseOf(m);
+  m.concat(v); // projection * view
+  this.viewProjectionInvMatrix.setInverseOf(m); // get the inverse of the projectionViewMatrix
 }
 
 Camera.prototype.getViewDistance = function(target) {
@@ -178,4 +184,10 @@ Camera.prototype.getViewDistanceXZ = function(target) {
   let distance = Math.sqrt(Math.pow((target[0] - this.position[0]),2)
                 + Math.pow((target[2] - this.position[2]),2));
   return distance;
+}
+
+Camera.prototype.sendUniforms = function() {
+  sendUniformMat4ToGLSL(this.viewMatrix, "u_view");
+  sendUniformMat4ToGLSL(this.projectionMatrix, "u_projection");
+  sendUniformVec3ToGLSL(this.position, "u_cameraPos");
 }

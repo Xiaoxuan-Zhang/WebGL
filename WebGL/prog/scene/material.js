@@ -42,6 +42,8 @@ class Material {
        }
        if (type == "f"){
          sendUniformFloatToGLSL(value, name);
+       } else if (type == "t"){
+         sendUniformFloatToGLSL(performance.now() / 10000.0, name);
        } else if (type == "int") {
          sendUniformUintToGLSL(value, name);
        } else if (type == "texture") {
