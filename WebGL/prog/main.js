@@ -19,9 +19,9 @@ var g_terrain = {
   scale: 1,
   mapSize: 65, //must be (2^n + 1)
   displacement: 64.0,
-  water: -0.01,
   earth: -0.5,
-  snow: 0.173,
+  snowBlur: 0.1,
+  snowAmount: 0.45,
   persistance: 0.41,
   lacunarity: 2.0,
   exponent: 2.5,
@@ -39,8 +39,6 @@ var g_guiInfo = {
 
 
 function main() {
-  // document.getElementById('displacement-value').value = g_terrain['displacement'];
-  // document.getElementById('sealevel-value').value = g_terrain['seaLevel'];
   // document.getElementById('headline').innerHTML = 'Main scene: Loading...'
 
   canvas = document.getElementById('my-canvas');
@@ -196,11 +194,12 @@ function setupGUI() {
 
   let terrain = gui.addFolder('Terrain');
   terrain.add(g_terrain, 'displacement', 0.0, 300.0).listen();
-  terrain.add(g_terrain, 'earth', -2.0, 2.0).listen();
-  terrain.add(g_terrain, 'snow', -2.0, 3.0).listen();
+  //terrain.add(g_terrain, 'earth', -2.0, 2.0).listen();
+  terrain.add(g_terrain, 'snowAmount', 0.3, 1.0).listen();
+  terrain.add(g_terrain, 'snowBlur', 0.0, 0.5).listen();
   terrain.add(g_terrain, 'persistance', 0.0, 1.0).listen();
-  terrain.add(g_terrain, 'lacunarity', 1.0, 3.0).listen();
-  terrain.add(g_terrain, 'exponent', 0.0, 4.0).listen();
+  terrain.add(g_terrain, 'lacunarity', 1.0, 5.0).listen();
+  //terrain.add(g_terrain, 'exponent', 0.0, 4.0).listen();
   terrain.add(g_terrain, 'fogAmount', 0.1, 5.0).listen();
   //terrain.add(g_terrain, 'clip', -5.0, 5.0).listen();
   terrain.add(g_terrain, 'updateMouse');

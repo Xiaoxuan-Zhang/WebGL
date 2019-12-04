@@ -22,8 +22,8 @@ var Camera = function() {
   this.viewProjectionInvMatrix = new Matrix4();
   this.deltaTime = 0.0;
   this.lastTime = performance.now();
-  this.rotationSpeed = 1.5;
-  this.velocity = 2.0;
+  this.rotationSpeed = 0.5;
+  this.velocity = 0.5;
   this.update();
 }
 
@@ -70,6 +70,12 @@ Camera.prototype.rotate = function(direction) {
   } else if (direction == "down")
   {
     this.pitch -= this.rotationSpeed;
+  }
+  if (this.pitch > 89.9) {
+    this.pitch = -89.9;
+  }
+  if (this.pitch < -89.9) {
+    this.pitch = -89.9;
   }
   this.update();
 }

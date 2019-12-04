@@ -451,13 +451,13 @@ varying vec3 v_normal;
 varying vec2 v_texCoord;
 varying vec3 v_fragPos;
 
-const vec3 ICE_BLUE = vec3(165.0, 242.0, 243.0)/256.0;
+const vec3 SNOW_COLOR = vec3(0.9, 0.9, 1.0);
 const vec3 BLUE_SAPPHIRE = vec3(25.0, 100.0, 106.0)/256.0;
 const vec3 EARTH_BROWN = vec3(0.1, 0.08, 0.05);
 const vec3 LIGHT_POSITION = vec3(0.0, 2000.0, -2000.0);
 const vec3 AMBIENT_COLOR =  vec3(1.0);
 const vec3 DIFFUSE_COLOR = vec3(1.0, 1.0, 0.7);
-const vec3 SPECULAR_COLOR = ICE_BLUE; //vec3(1.0, 1.0, 1.0);
+const vec3 SPECULAR_COLOR = vec3(1.0, 1.0, 1.0);
 #define LIGHTING_ENABLED 1
 
 float rand(vec2 v) {
@@ -489,10 +489,10 @@ vec3 calcLights(float a, float d, float s, float e, in vec3 ambColor, in vec3 di
 }
 
 vec4 snow() {
-  vec3 snow_color = ICE_BLUE;
+  vec3 snow_color = SNOW_COLOR;
   snow_color *= calcLights(0.7, 0.4, 0.2, 4.0, AMBIENT_COLOR, DIFFUSE_COLOR, SPECULAR_COLOR);
   vec2 v = v_fragPos.xz;
-  if (rand(v) > 0.999) {
+  if (rand(v) > 0.99) {
     snow_color += abs(sin(u_time + v.x*v.y)) * vec3(1.0);
   }
   return vec4(snow_color, 1.0);
@@ -505,18 +505,20 @@ vec4 earth() {
 }
 
 void main(){
-  float waterLevel = u_terrain[0];
-  float earthLevel = u_terrain[1];
-  float snowLevel = u_terrain[2];
+  float earthLevel = u_terrain[0];
+  float snowAmount = 1.0 - u_terrain[1];
+  float snowBlur = u_terrain[2];
 
   if (v_noise < u_clip[0] || v_noise > u_clip[1]) {
     discard;
   }
 
   vec4 color = vec4(1.0);
-  float f = smoothstep(0.34, 0.45, v_normal.y);
-  float f1 = smoothstep(-10.0, 10.0, v_fragPos.y);
-  color = mix(earth(), snow(), f * f1 ) ;
+  float delta = 0.1;
+  float dotN = max(dot(v_normal, vec3(0.0, 1.0, 0.0)), 0.0);
+  float f = smoothstep(snowAmount - snowBlur * 0.5, snowAmount + snowBlur * 0.5 , dotN);
+  //float f1 = smoothstep(-10.0, 10.0, v_fragPos.y);
+  color = mix(earth(), snow(), f) ;
 
   // color = water() * max(sign(waterLevel - v_noise), 0.0);
   // color = earth() * max(sign(v_noise - earthLevel), 0.0);

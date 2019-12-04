@@ -27,8 +27,6 @@ function initEventHandelers() {
 
   document.onkeydown = function(ev){ keydown(ev); };
   window.addEventListener("resize", resizeCanvas, false);
-  // document.getElementById("displacement-value").addEventListener("change", setDisplacement, false);
-  // document.getElementById("sealevel-value").addEventListener("change", setSeaLevel, false);
 }
 
 function resizeCanvas() {
@@ -40,12 +38,12 @@ function resizeCanvas() {
   let displayHeight = Math.floor(gl.canvas.clientHeight * realToCSSPixels);
 
   // Check if the canvas is not the same size.
-  if (canvas.width  != displayWidth ||
-      canvas.height != displayHeight) {
+  if (gl.canvas.width  != displayWidth ||
+      gl.canvas.height != displayHeight) {
 
     // Make the canvas the same size
-    canvas.width  = displayWidth;
-    canvas.height = displayHeight;
+    gl.canvas.width  = displayWidth;
+    gl.canvas.height = displayHeight;
   }
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 }

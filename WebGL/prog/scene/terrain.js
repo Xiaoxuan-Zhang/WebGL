@@ -72,7 +72,7 @@ PCGTerrain.prototype.render = function() {
 PCGTerrain.prototype.sendUniforms = function() {
   //update the latest parameters from GUI
   this.material.uniforms.u_displacement.value = g_terrain.displacement;
-  this.material.uniforms.u_terrain.value = [g_terrain.water, g_terrain.earth, g_terrain.snow];
+  this.material.uniforms.u_terrain.value = [g_terrain.earth, g_terrain.snowAmount, g_terrain.snowBlur];
   this.material.uniforms.u_noise.value = [g_terrain.persistance, g_terrain.lacunarity, g_terrain.exponent];
   this.material.uniforms.u_time.value = performance.now() * 0.001;
   this.material.uniforms.u_clip.value = g_terrain.clip;
