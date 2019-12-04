@@ -8,6 +8,7 @@ var Scene = function() {
   this.geometries = []; // Geometries being drawn on canvas
   this.sceneObjects = []; //Objects being added to scene
   this.skybox = null;
+  this.final = null;
 }
 
 Scene.prototype.init = function() {
@@ -72,60 +73,25 @@ Scene.prototype.updateAnimation = function() {
  */
 Scene.prototype.render = function() {
   //let start = performance.now();
-  //Render to framebuffer
-
-  // //first pass
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, g_frameBuffer['first']);
-  // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  // gl.disable(gl.CULL_FACE);
-  // g_terrain.clip = [-100.0, 100.0];
-  // this.sceneObjects.forEach(function(object) {
-  //   object.render();
-  // });
-  // gl.flush();
-  //
-  // //second pass
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, g_frameBuffer['second']);
-  // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  //
-  // gl.enable(gl.DEPTH_TEST);
-  // gl.enable(gl.CULL_FACE);
-  // gl.frontFace(gl.CW);
-  // g_terrain.clip = [0.0, 100.0];
-  // camera.position[1] *= -1.0 ;
-  // camera.pitch *= -1.0;
-  // this.sceneObjects.forEach(function(object) {
-  //   object.render();
-  // });
-  // gl.flush();
-  //
-  // //third pass
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, g_frameBuffer['third']);
-  // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  //
-  // gl.enable(gl.DEPTH_TEST);
-  // gl.enable(gl.CULL_FACE);
-  // gl.frontFace(gl.CW);
-  // g_terrain.clip = [-100.0, 0.0];
-  // camera.position[1] *= -1.0;
-  // camera.pitch *= -1.0;
-  // this.sceneObjects.forEach(function(object) {
-  //   object.render();
-  // });
-  // gl.flush();
-
-  //render to scene
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  //first pass : render to framebuffer
+  gl.bindFramebuffer(gl.FRAMEBUFFER, g_frameBuffer['first']);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  gl.frontFace(gl.CW);
+  g_terrain.clip = [-100.0, 100.0];
+  this.sceneObjects.forEach(function(object) {
+    object.render();
+  });
+  gl.frontFace(gl.CCW);
+
   this.geometries.forEach(function(geometry){
     if (geometry.visible) {
       geometry.render();
     }
   });
+  gl.flush();
+
 
   if (this.skybox != null) {
     gl.disable(gl.CULL_FACE);
@@ -133,6 +99,15 @@ Scene.prototype.render = function() {
     this.skybox.render();
     gl.depthFunc(gl.LESS);
     gl.enable(gl.CULL_FACE);
+  }
+
+  //Second pass : render to scene
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  if (this.final != null) {
+    this.final.render();
   }
   // let duration = Math.round(performance.now() - start);
   // g_guiInfo.fps = 1000/duration;
@@ -142,15 +117,14 @@ Scene.prototype.render = function() {
 * For debug
 */
 function addObjects() {
+  addFinalQuad();
   addPCGSky();
   //addSkybox();
-  //addCat();
+  addCat();
   //addFloor();
   //addCube();
-  //addFinalQuad();
-  //addReflectQuad();
-  //addRefractQuad();
-  //addPCGTerrain();
+
+  addPCGTerrain();
 
 }
 
@@ -167,7 +141,7 @@ function addCat() {
     u_normal: {type: "texture", value: g_texture["cat"]["normal"]},
   };
   let material = new Material(uniforms, g_programs['BasicLights']);
-  geo.translate(0.0, 2.0, 0.0);
+  geo.translate(0.0, 2.0, -5.0);
   geo.scale([3.0, 3.0, 3.0]);
   geo.addMaterial(material);
   scene.addGeometry(geo);
@@ -205,43 +179,15 @@ function addCube() {
   scene.addGeometry(geo);
 }
 
-function addReflectQuad() {
-  let geo = new Square();
-  geo.translate(-0.8, 0.8, 0.0);
-  geo.scale([0.2, 0.2, 1.0]);
-  let uniforms = {
-    u_model: {type: "mat4", value: geo.modelMatrix},
-    u_sample: {type: "texture", value: g_texture['framebuffer']['reflect']}
-  };
-  let material = new Material(uniforms, g_programs["Custom"]);
-  geo.addMaterial(material);
-  scene.addGeometry(geo);
-}
-
-function addRefractQuad() {
-  let geo = new Square();
-  geo.translate(-0.8, 0.4, 0.0);
-  geo.scale([0.2, 0.2, 1.0]);
-  let uniforms = {
-    u_model: {type: "mat4", value: geo.modelMatrix},
-    u_sample: {type: "texture", value: g_texture['framebuffer']['refract']}
-  };
-  let material = new Material(uniforms, g_programs["Custom"]);
-  geo.addMaterial(material);
-  scene.addGeometry(geo);
-}
-
 function addFinalQuad() {
   let geo = new Square();
   let uniforms = {
     u_sample: {type: "texture", value: g_texture['framebuffer']['color']},
-    u_reflect: {type: "texture", value: g_texture['framebuffer']['reflect']},
-    u_refract: {type: "texture", value: g_texture['framebuffer']['refract']}
-    //u_depth: {type: "texture", value: g_texture['framebuffer']['depth']},
+    u_depth: {type: "texture", value: g_texture['framebuffer']['depth']},
   };
   let material = new Material(uniforms, g_programs["Final"]);
   geo.addMaterial(material);
-  scene.addGeometry(geo);
+  scene.final = geo;
 }
 
 function addSkybox() {

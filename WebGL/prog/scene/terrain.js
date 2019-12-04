@@ -26,7 +26,7 @@ var PCGTerrain = function(mapSize, mapScale, lodInfo) {
     u_mouse: {type:"v2", value: [g_mousePos[0], -g_mousePos[1]]},
     u_time: {type:"f", value: performance.now()}
   }
-  this.material = new Material(uniforms, g_programs["Terrain"]);
+  this.material = new Material(uniforms, g_programs["Terrain2"]);
   this.init();
   this.updateTerrain();
 }

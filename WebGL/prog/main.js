@@ -82,7 +82,8 @@ function addShaderPrograms()
   createShaderProgram('BasicLights', BASICLIGHTS_VSHADER1, BASICLIGHTS_FSHADER1);
   createShaderProgram('Texture', TEX_VSHADER1, TEX_FSHADER1);
   createShaderProgram('Custom', CUSTOM_VSHADER1, CUSTOM_FSHADER1);
-  createShaderProgram('Terrain', TERRAIN_VSHADER2, TERRAIN_FSHADER2);
+  createShaderProgram('Terrain', TERRAIN_VSHADER1, TERRAIN_FSHADER1);
+  createShaderProgram('Terrain2', TERRAIN_VSHADER2, TERRAIN_FSHADER2);
   createShaderProgram('Final', FINAL_VSHADER, FINAL_FSHADER);
   createShaderProgram('Cubemap', CUBEMAP_VSHADER, CUBEMAP_FSHADER);
   createShaderProgram('Skybox', SKYBOX_VSHADER, SKYBOX_FSHADER);
@@ -165,29 +166,6 @@ function RenderToTexture(type) {
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTexture, 0);
   // set the texture as the depth attachment
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0);
-
-  gl.bindTexture(gl.TEXTURE_2D, null);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-  /*opengl es only supports single color buffer */
-  let fb1 = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
-  g_frameBuffer['second'] = fb1;
-
-  let reflectTexture = createNullTexture(gl.canvas.width, gl.canvas.height, gl.RGBA, gl.RGBA, 0, gl.UNSIGNED_BYTE, gl.NEAREST, gl.NEAREST, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE);
-  addTexture('framebuffer', 'reflect', reflectTexture);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, reflectTexture, 0);
-
-  gl.bindTexture(gl.TEXTURE_2D, null);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-  let fb2 = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
-  g_frameBuffer['third'] = fb2;
-
-  let refractTexture = createNullTexture(gl.canvas.width, gl.canvas.height, gl.RGBA, gl.RGBA, 0, gl.UNSIGNED_BYTE, gl.NEAREST, gl.NEAREST, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE);
-  addTexture('framebuffer', 'refract', refractTexture);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, refractTexture, 0);
 
   gl.bindTexture(gl.TEXTURE_2D, null);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);

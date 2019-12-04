@@ -5,14 +5,14 @@
  * @this {Camera}
  */
 var Camera = function() {
-  this.position = new Float32Array([0.0, 20.0, 10.0]);
+  this.position = new Float32Array([0.0, 5.0, 10.0]);
   this.target = new Float32Array([0.0, 0.0, 0.0]);
   this.worldUp = new Float32Array([0, 1, 0]);
   this.up = new Float32Array([0, 1, 0]);
   this.front = new Float32Array([0, 0, -1]);
   this.right = new Float32Array([0, 0, 0]);
   this.yaw = -90.0;
-  this.pitch = -20.0;
+  this.pitch = -10.0;
   this.fov = 40.0;
   this.near = 0.1;
   this.far = 500.0;
