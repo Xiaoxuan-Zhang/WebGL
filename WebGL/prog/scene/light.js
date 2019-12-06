@@ -7,7 +7,7 @@
 
 class Light {
   /**
-   * Constructor for Scene.
+   * Constructor for Light.
    *
    * @constructor
    */

@@ -11,7 +11,11 @@ function tick() {
     scene.init();
     addObjects();
     g_loaded = true;
+    lastTime = performance.now();
   }
+  let currTime = performance.now();
+  deltaTime = currTime - lastTime;
+  lastTime = currTime;
   scene.updateAnimation();
   scene.render();
   requestAnimationFrame(tick, canvas);

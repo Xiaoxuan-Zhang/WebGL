@@ -23,7 +23,7 @@ var Camera = function() {
   this.deltaTime = 0.0;
   this.lastTime = performance.now();
   this.rotationSpeed = 0.5;
-  this.velocity = 0.5;
+  this.speed = 0.5;
   this.update();
 }
 
@@ -32,7 +32,8 @@ var Camera = function() {
 **/
 Camera.prototype.move = function(direction) {
   // move the camera around
-  let offset = this.velocity; //0.05;
+  let velocity = this.speed * deltaTime;
+  let offset = velocity;
   if (direction == "forward" ) {
     this.position[0] += this.front[0] * offset;
     this.position[1] += this.front[1] * offset;
@@ -55,21 +56,22 @@ Camera.prototype.move = function(direction) {
 }
 
 /**
-* rotate camera
+* rotate camera with keyboard
 **/
 Camera.prototype.rotate = function(direction) {
+  let velocity = this.rotationSpeed * deltaTime;
   if (direction == "left")
   {
-    this.yaw -= this.rotationSpeed;
+    this.yaw -= velocity;
   } else if (direction == "right")
   {
-    this.yaw += this.rotationSpeed;
+    this.yaw += velocity;
   } else if (direction == "up")
   {
-    this.pitch += this.rotationSpeed;
+    this.pitch += velocity;
   } else if (direction == "down")
   {
-    this.pitch -= this.rotationSpeed;
+    this.pitch -= velocity;
   }
   if (this.pitch > 89.9) {
     this.pitch = -89.9;
@@ -78,6 +80,32 @@ Camera.prototype.rotate = function(direction) {
     this.pitch = -89.9;
   }
   this.update();
+}
+
+/**
+* rotate camera with mouse
+**/
+Camera.prototype.rotateWithMouse = function(deltaX, deltaY) {
+  let sensitivity = 50.0;
+  this.yaw += deltaX * sensitivity;
+  this.pitch += deltaY * sensitivity;
+
+  if (this.pitch > 89.9) {
+    this.pitch = -89.9;
+  }
+  if (this.pitch < -89.9) {
+    this.pitch = -89.9;
+  }
+  this.update();
+}
+
+/**
+* zoom in and out with scroll
+**/
+Camera.prototype.zoom = function(offset) {
+  if (this.fov > 1.0 || this.fov < 45.0) {
+    this.fov += offset;
+  }
 }
 
 Camera.prototype.update = function() {

@@ -1,31 +1,32 @@
 var isMousedown = false;
-
+var lastMouse = [0.0, 0.0];
+var deltaMouse = [0.0, 0.0];
 /**
  * Responsible for initializing buttons, sliders, radio buttons, etc. present
- * within your HTML document.
+ * within HTML document.
  */
 function initEventHandelers() {
-  canvas.onmouseup = function(ev){
+  canvas.onmouseup = function(ev) {
     isMousedown = false;
   };
-  canvas.onmousedown = function(ev){
+  canvas.onmousedown = function(ev) {
     isMousedown = true;
     click(ev)
   };
-  canvas.onmousemove = function(ev){
-    if (isMousedown)
-    {
+  canvas.onmousemove = function(ev) {
+    if (isMousedown) {
       click(ev);
+    } else {
+      let x = ev.clientX;
+      let y = ev.clientY;
+      let rect = ev.target.getBoundingClientRect();
+      x = (x - rect.left) * 2.0/canvas.width - 1.0;
+      y = (y - rect.top) * -2.0/canvas.height + 1.0;
+      g_mousePos = [x, y];
+      lastMouse = [x, y];
     }
-    let x = ev.clientX;
-    let y = ev.clientY;
-    let rect = ev.target.getBoundingClientRect();
-    x = (x - rect.left) * 2.0/canvas.width - 1.0;
-    y = (y - rect.top) * -2.0/canvas.height + 1.0;
-    g_mousePos = [x, y];
   };
-
-  document.onkeydown = function(ev){ keydown(ev); };
+  document.onkeydown = function(ev) { keydown(ev); };
   window.addEventListener("resize", resizeCanvas, false);
 }
 
@@ -47,6 +48,7 @@ function resizeCanvas() {
   }
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 }
+
 /**
  * Function called upon mouse click or mouse drag. Computes position of cursor,
  * pushes cursor position as GLSL coordinates, and draws.
@@ -59,7 +61,10 @@ function click(ev) {
   let rect = ev.target.getBoundingClientRect();
   x = (x - rect.left) * 2.0/canvas.width - 1.0;
   y = (y - rect.top) * -2.0/canvas.height + 1.0;
-
+  deltaMouse[0] = x - lastMouse[0];
+  deltaMouse[1] = y - lastMouse[1];
+  lastMouse = [x, y];
+  camera.rotateWithMouse(deltaMouse[0], deltaMouse[1]);
 }
 
 function keydown(ev) {
@@ -79,9 +84,7 @@ function keydown(ev) {
       camera.rotate("left");
     } else if (ev.key == 'l'){
       camera.rotate("right");
-    }
-    else
-    { return; } // Prevent the unnecessary drawing
+    } else { return; } // Prevent the unnecessary drawing
 }
 
 function handleObjFiles(files){

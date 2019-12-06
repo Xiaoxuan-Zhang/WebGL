@@ -12,6 +12,8 @@ var g_loadedObjects = 0;
 var g_loaded = false;
 var g_mousePos = [0.0, 0.0];
 var g_frameBuffer = {};
+var lastTime = 0.0;
+var deltaTime = 0.0;
 /**
 Globals for terrain
 */
@@ -29,6 +31,14 @@ var g_terrain = {
   fogAmount: 2.2,
   updateMouse: false
 };
+
+var g_particles = {
+  enable: false,
+  amount: 100,
+  speed: 1.0,
+  velocity: 1.0,
+  gravity: 0.5
+}
 /**
 Globals for GUI
 */
@@ -203,7 +213,15 @@ function setupGUI() {
   terrain.add(g_terrain, 'fogAmount', 0.1, 5.0).listen();
   //terrain.add(g_terrain, 'clip', -5.0, 5.0).listen();
   terrain.add(g_terrain, 'updateMouse');
-  terrain.open();
+  terrain.close();
+
+  let particles = gui.addFolder('Particles');
+  particles.add(g_particles, 'enable');
+  particles.add(g_particles, 'amount', 100, 1000).listen();
+  particles.add(g_particles, 'speed', 0.1, 5.0).listen();
+  particles.add(g_particles, 'velocity', 0.1, 5.0).listen();
+  particles.add(g_particles, 'gravity', 0.0, 5.0).listen();
+  particles.close();
 
   let info = gui.addFolder('Info');
   info.add(g_guiInfo, 'scene').listen();
