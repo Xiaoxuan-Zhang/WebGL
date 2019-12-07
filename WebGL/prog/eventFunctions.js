@@ -35,8 +35,8 @@ function resizeCanvas() {
   // Lookup the size the browser is displaying the canvas in CSS pixels
   // and compute a size needed to make our drawingbuffer match it in
   // device pixels.
-  let displayWidth  = Math.floor(gl.canvas.clientWidth  * realToCSSPixels);
-  let displayHeight = Math.floor(gl.canvas.clientHeight * realToCSSPixels);
+  let displayWidth  = gl.canvas.clientWidth; //Math.floor(gl.canvas.clientWidth  * realToCSSPixels);
+  let displayHeight = gl.canvas.clientHeight; //Math.floor(gl.canvas.clientHeight * realToCSSPixels);
 
   // Check if the canvas is not the same size.
   if (gl.canvas.width  != displayWidth ||
@@ -45,8 +45,14 @@ function resizeCanvas() {
     // Make the canvas the same size
     gl.canvas.width  = displayWidth;
     gl.canvas.height = displayHeight;
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
   }
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  if (camera) {
+    camera.updateProjectionMatrix();
+  }
+  updateRenderTexture();
 }
 
 /**

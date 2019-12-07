@@ -18,7 +18,7 @@ var Camera = function() {
   this.far = 500.0;
   this.viewMatrix = new Matrix4();
   this.projectionMatrix = new Matrix4();
-  this.projectionMatrix.setPerspective(this.fov, canvas.width/canvas.height, this.near, this.far);
+  this.projectionMatrix.setPerspective(this.fov, gl.canvas.width/gl.canvas.height, this.near, this.far);
   this.viewProjectionInvMatrix = new Matrix4();
   this.deltaTime = 0.0;
   this.lastTime = performance.now();
@@ -180,6 +180,10 @@ Camera.prototype.normalize = function(a) {
     out[2] = a[2] * len;
   }
   return out;
+}
+
+Camera.prototype.updateProjectionMatrix = function() {
+  this.projectionMatrix.setPerspective(this.fov, gl.canvas.width/gl.canvas.height, this.near, this.far);
 }
 
 Camera.prototype.updateViewMatrix = function() {

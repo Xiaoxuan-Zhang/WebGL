@@ -178,7 +178,13 @@ function RenderToTexture(type) {
 
   gl.bindTexture(gl.TEXTURE_2D, null);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
 
+function updateRenderTexture(width, height) {
+  if (g_texture['framebuffer']) {
+    updateNullTexture(g_texture['framebuffer']['color'], gl.canvas.width, gl.canvas.height, gl.RGBA, gl.RGBA, 0, gl.UNSIGNED_BYTE, gl.NEAREST, gl.NEAREST, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE);
+    updateNullTexture(g_texture['framebuffer']['depth'], gl.canvas.width, gl.canvas.height, gl.DEPTH_COMPONENT24, gl.DEPTH_COMPONENT, 0, gl.UNSIGNED_INT, gl.NEAREST, gl.NEAREST, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE);
+  }
 }
 
 /**

@@ -194,6 +194,12 @@ function createNullTexture(width, height, internalFormat, format, border, dataTy
   return texture;
 }
 
+function updateNullTexture(texture, width, height, internalFormat, format, border, dataType, magParam, minParam, wrapSParam, wrapTParam) {
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, null);
+  gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
 function createBufferData(data) {
   let newBuffer = gl.createBuffer();
   if (!newBuffer) {
