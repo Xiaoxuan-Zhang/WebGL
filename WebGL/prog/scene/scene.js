@@ -220,6 +220,7 @@ function addPCGSky() {
   var uniforms = {
     u_viewProjectInvMatrix: {type: "mat4", value: camera.viewProjectionInvMatrix},
     u_cubemap: {type: "cubemap", value: g_texture['skybox']['skybox']},
+    u_noisemap: {type: "texture", value: g_texture['noise']['noise64']},
     u_time: {type: "t", value: 0.0}
   };
   var material = new Material(uniforms, g_programs["PCGSky"]);
@@ -236,8 +237,8 @@ function addPCGTerrain() {
 function setLodInfo() {
   let lodInfo = [];
   lodInfo.push(200);
+  lodInfo.push(300);
   lodInfo.push(400);
-  lodInfo.push(600);
   lodInfo.push(800);
   return lodInfo;
 }

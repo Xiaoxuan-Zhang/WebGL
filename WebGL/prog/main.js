@@ -28,7 +28,7 @@ var g_terrain = {
   lacunarity: 2.0,
   exponent: 2.5,
   clip: [-100.0, 100.0],
-  fogAmount: 2.2,
+  fogAmount: 1.2,
   updateMouse: false
 };
 
@@ -108,6 +108,7 @@ function loadTextures() {
   // loadTextureFile('external/OBJ/Cat-1/Cat_S.PNG', 'cat', 'specular');
   // loadTextureFile('external/OBJ/Cat-1/Cat_N.PNG', 'cat', 'normal');
   //loadTextureFile('external/textures/turbulence_bw.png', 'heightMap', 'diffuse');
+  loadTextureFile('external/textures/noise64.png', 'noise', 'noise64');
 }
 
 function loadObjects () {

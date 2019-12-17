@@ -15,7 +15,7 @@ var Camera = function() {
   this.pitch = 3.0;
   this.fov = 40.0;
   this.near = 0.1;
-  this.far = 500.0;
+  this.far = 1000.0;
   this.viewMatrix = new Matrix4();
   this.projectionMatrix = new Matrix4();
   this.projectionMatrix.setPerspective(this.fov, gl.canvas.width/gl.canvas.height, this.near, this.far);
@@ -24,6 +24,7 @@ var Camera = function() {
   this.lastTime = performance.now();
   this.rotationSpeed = 0.5;
   this.speed = 0.5;
+  this.sensitivity = 100.0;
   this.update();
 }
 
@@ -74,7 +75,7 @@ Camera.prototype.rotate = function(direction) {
     this.pitch -= velocity;
   }
   if (this.pitch > 89.9) {
-    this.pitch = -89.9;
+    this.pitch = 89.9;
   }
   if (this.pitch < -89.9) {
     this.pitch = -89.9;
@@ -86,12 +87,11 @@ Camera.prototype.rotate = function(direction) {
 * rotate camera with mouse
 **/
 Camera.prototype.rotateWithMouse = function(deltaX, deltaY) {
-  let sensitivity = 50.0;
-  this.yaw += deltaX * sensitivity;
-  this.pitch += deltaY * sensitivity;
+  this.yaw += deltaX * this.sensitivity;
+  this.pitch += deltaY * this.sensitivity;
 
   if (this.pitch > 89.9) {
-    this.pitch = -89.9;
+    this.pitch = 89.9;
   }
   if (this.pitch < -89.9) {
     this.pitch = -89.9;

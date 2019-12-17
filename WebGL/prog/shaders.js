@@ -677,85 +677,95 @@ var SKYBOX_FSHADER =
 
   var SKYBOXQUAD_FSHADER =
     `
+    #define SUN_COLOR vec3(0.6,0.5,0.2)
+    #define SUN_GLOW vec3(0.7,0.4,0.4)
+    #define SKY_COLOR vec3(0.5,0.6,0.9)
+
     precision mediump float;
     uniform samplerCube u_cubemap;
+    uniform sampler2D u_noisemap;
     uniform float u_time;
     uniform mat4 u_viewProjectInvMatrix;
-
     varying vec4 v_fragPos;
-    //noise function from iq: https://www.shadertoy.com/view/Msf3WH
-    vec2 hash( vec2 p )
-    {
-    	p = vec2( dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)) );
-    	return -1.0 + 2.0*fract(sin(p)*43758.5453123);
+
+    float noise(in vec2 uv) {
+        return texture2D(u_noisemap, uv/64.0).r;
     }
 
-    float noise( in vec2 p )
-    {
-        const float K1 = 0.366025404; // (sqrt(3)-1)/2;
-        const float K2 = 0.211324865; // (3-sqrt(3))/6;
+    float smoothNoise(in vec2 uv) {
+        vec2 luv = fract(uv); //range from 0.0 to 1.0
+        vec2 id = floor(uv); //the integer part of uv, 0, 1, 2
+        luv = luv*luv*(3.0 - 2.0*luv); //similar to smoothstep
 
-    	vec2  i = floor( p + (p.x+p.y)*K1 );
-        vec2  a = p - i + (i.x+i.y)*K2;
-        float m = step(a.y,a.x);
-        vec2  o = vec2(m,1.0-m);
-        vec2  b = a - o + K2;
-    	vec2  c = a - 1.0 + 2.0*K2;
-        vec3  h = max( 0.5-vec3(dot(a,a), dot(b,b), dot(c,c) ), 0.0 );
-    	vec3  n = h*h*h*h*vec3( dot(a,hash(i+0.0)), dot(b,hash(i+o)), dot(c,hash(i+1.0)));
-        return dot( n, vec3(70.0) );
+        //get values from the cordinates of a square
+        float bl = noise(id);
+        float br = noise(id + vec2(1.0, 0.0));
+        float tl = noise(id + vec2(0.0, 1.0));
+        float tr = noise(id + vec2(1.0, 1.0));
+
+        float b = mix(bl, br, luv.x); //interpolate between bl and br
+        float t = mix(tl, tr, luv.x); //interpolate between tl and tr
+
+        return mix(b, t, luv.y);
     }
 
-    const mat2 m2 = mat2(1.6,  1.2, -1.2,  1.6);
-
-    float fbm4(vec2 p) {
+    float fbm4(in vec2 uv) {
         float amp = 0.5;
+        float f = 2.0;
         float h = 0.0;
-        for (int i = 0; i < 4; i++) {
-            float n = noise(p);
-            h += amp * n;
+        float a = 0.0;
+        for (int i = 0; i < 4; i++){
+            h += amp * smoothNoise(uv*f);
+            a += amp;
             amp *= 0.5;
-            p = m2 * p ;
+            f *= 2.0;
         }
 
-    	return  0.5 + 0.5*h;
+        h /= a;
+        return h;
     }
-    vec3 calcSky(vec3 p) {
-      vec3 sky = vec3(0.5, 0.7, 0.8);
-      vec3 col = vec3(0.0);
 
-      // speed
-      float v = 0.001;
+    vec3 calcSky(vec3 skyColor, vec3 cloudColor, vec2 uv) {
+        vec3 col = vec3(0.0);
+        // speed
+        float v = 0.001;
+        // layer1
+        vec2 scale = uv * 2.0;
+        vec2 turbulence = 0.008 * vec2(noise(vec2(uv.x * 10.0, uv.y *10.0)), noise(vec2(uv.x * 10.0, uv.y * 10.0)));
+        scale += turbulence;
+    	  float n1 = fbm4(uv);
 
-      // layer1
-      vec3 cloudCol = vec3(1.0);
-      vec2 uv = p.xy;
-
-      vec2 scale = uv * 5.0;
-      vec2 turbulence = 0.008 * vec2(noise(vec2(uv.x * 10.0, uv.y *10.0)), noise(vec2(uv.x * 10.0, uv.y * 10.0)));
-      scale += turbulence;
-  	  float n1 = fbm4(vec2(scale.x - 20.0 * sin(u_time * v * 2.0), scale.y - 50.0 * sin(u_time * v)));
-      //float n1 = fbm4(vec2(scale.x - 20.0, scale.y - 50.0));
-      col = mix( sky, cloudCol, smoothstep(0.5, 0.8, n1));
-
-      //layer2
-      scale = uv * 0.5;
-      turbulence = 0.05 * vec2(noise(vec2(uv.x * 2.0, uv.y * 2.1)), noise(vec2(uv.x * 1.5, uv.y * 1.2)));
-      scale += turbulence;
-      //float n2 = fbm4(scale + 20.0);
-      float n2 = fbm4(scale + 20.0 * sin(u_time * v ));
-      col =  mix( col, cloudCol, smoothstep(0.2, 0.9, n2));
-      col = min(col, vec3(1.0));
-      return col;
+        col = mix( skyColor, cloudColor, smoothstep(0.2, 0.8, n1));
+        col = min(col, vec3(1.0));
+        return col;
     }
 
     vec3 skybox() {
       vec4 t = u_viewProjectInvMatrix * v_fragPos;
-      vec3 dir = normalize(t.xyz / t.w);
-      vec3 texCubemap = textureCube( u_cubemap, dir ).rgb;
-      vec3 sky = calcSky(dir);
-      return sky;
+      vec3 rd = normalize(t.xyz / t.w);
+      // A simple way to place some clouds on a distant plane above the terrain -- Based on something IQ uses.
+      const float SC = 1e5;
+      // Trace out to a distant XZ plane.
+      float dist = (SC - 0.0)/rd.y;
+      vec2 p = (dist*rd).xz;
+
+      vec3 sunDir = normalize(vec3(0.0, 0.5, -1.0));
+      float sun = max(dot(sunDir, rd),0.0);
+      vec3 skyCol = vec3(0.0);
+      vec3 cloudCol = vec3(1.0);
+
+      skyCol += mix(SUN_GLOW, SKY_COLOR, 2.0*abs(rd.y));//horizontal brightness
+      skyCol += 0.5*SUN_COLOR*pow(sun, 64.0);
+      skyCol += 0.4*SUN_GLOW*pow(sun, 32.0);
+
+      skyCol = calcSky(skyCol, cloudCol, p/SC);
+      float grad = smoothstep(0.0, 0.3, rd.y);
+      skyCol = mix(SUN_GLOW*vec3(0.4,0.6,0.6), skyCol, grad);
+
+      vec3 texCubemap = textureCube( u_cubemap, rd ).rgb;
+      return skyCol;
     }
+
     void main(){
       gl_FragColor = vec4(skybox(), 1.0);
     }
