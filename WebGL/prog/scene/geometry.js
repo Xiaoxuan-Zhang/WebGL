@@ -120,6 +120,9 @@ class Geometry {
     if (this.material.uniforms["u_fog"]) {
       this.material.uniforms["u_fog"].value = g_terrain.fogAmount;
     }
+    if (this.material.uniforms["u_fogColor"]) {
+      this.material.uniforms["u_fogColor"].value = g_terrain.fogColor;
+    }
   }
 
 }

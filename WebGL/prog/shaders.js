@@ -426,15 +426,17 @@ var TERRAIN_VSHADER2 =
     vec4 world_pos = u_model * a_position;
     vec4 height = terrainHeight(world_pos.xz);
     vec3 new_position = world_pos.xyz + a_normal * u_displacement * height.x;
+
     gl_Position = u_projection * u_view * vec4(new_position, 1.0);
     v_noise = height.x;
     v_texCoord = a_texCoord;
 
-#ifdef CALC_NORM
+#if CALC_NORM == 1
       v_normal = height.yzw;
 #else
       v_normal = (u_normalMatrix * vec4(a_normal, 1.0)).xyz;
 #endif
+
     v_fragPos = new_position;
   }
 `;
@@ -451,81 +453,76 @@ varying vec3 v_normal;
 varying vec2 v_texCoord;
 varying vec3 v_fragPos;
 
-const vec3 SNOW_COLOR = vec3(0.9, 0.9, 1.0);
-const vec3 BLUE_SAPPHIRE = vec3(25.0, 100.0, 106.0)/256.0;
-const vec3 EARTH_BROWN = vec3(0.1, 0.08, 0.05);
-const vec3 LIGHT_POSITION = vec3(0.0, 2000.0, -2000.0);
-const vec3 AMBIENT_COLOR =  vec3(1.0);
-const vec3 DIFFUSE_COLOR = vec3(1.0, 1.0, 0.7);
-const vec3 SPECULAR_COLOR = vec3(1.0, 1.0, 1.0);
-#define LIGHTING_ENABLED 1
+const vec3 SNOW_COLOR = vec3(0.2);
+const vec3 SKY_COLOR = vec3(0.58, 0.65, 0.8);
+const vec3 EARTH_BROWN = vec3(0.063, 0.034, 0.015);
+const vec3 EARTH_DARKBROWN = vec3(0.063, 0.024, 0.01) * 0.9;
+const vec3 LIGHT_DIR = vec3(0.3, 0.5, -0.8);
+const vec3 SUN_COLOR = vec3(1.9, 1.6, 1.0);
 
 float rand(vec2 v) {
     return fract(sin(dot(v ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
-vec3 calcLights(float a, float d, float s, float e, in vec3 ambColor, in vec3 diffColor, in vec3 specColor) {
+vec3 calcLights(float a, float d, float s, float e, vec3 ambientColor, vec3 lightColor, vec3 materialColor, vec3 specColor) {
   vec3 color = vec3(1.0);
 
-#ifdef LIGHTING_ENABLED
-    vec3 normalRandom = 0.3*fract(vec3(rand(v_fragPos.xy), rand(v_fragPos.yx), rand(v_fragPos.zx)));
-    //ambient
-    vec3 ambientColor = ambColor * a;
+  //ambient
+  ambientColor = ambientColor * a;
 
-    //diffuse
-    vec3 norm =  normalize(v_normal + normalRandom) ;
-    vec3 lightDir = normalize(LIGHT_POSITION - v_fragPos);
-    float diffuse = max(dot(lightDir, norm), 0.0);
-    vec3 diffuseColor = diffColor * diffuse * d;
+  //diffuse
+  vec3 norm =  normalize(v_normal) ;
+  vec3 lightDir = normalize(LIGHT_DIR);
+  float diffuse = max(dot(lightDir, norm), 0.0);
+  vec3 diffuseColor = diffuse * d * lightColor;
 
-    //specular
-    vec3 viewDir = normalize(u_cameraPos - v_fragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float specular = pow(max(dot(reflectDir, viewDir), 0.0), e);
-    vec3 specularColor = specColor * specular * s;
-    color = ambientColor + diffuseColor + specularColor;
-#endif
+  //specular
+  /*
+  vec3 viewDir = normalize(u_cameraPos - v_fragPos);
+  vec3 reflectDir = reflect(-lightDir, norm);
+  float specular = pow(max(dot(reflectDir, viewDir), 0.0), e);
+  vec3 specularColor = specColor * specular * s;
+  */
+
+  //bouncing-back light from the sunDir
+  float bc = max(dot(norm, normalize(lightDir * vec3(-1.0, 0.0, -1.0))), 0.0);
+  vec3 bcColor = bc * ambientColor;
+
+  color = materialColor * (ambientColor + diffuseColor + bcColor);
   return color;
 }
-
-vec4 snow() {
+vec3 earth() {
+  vec3 col = EARTH_BROWN;
+  col = mix(EARTH_BROWN, EARTH_DARKBROWN, max(sin(v_fragPos.y*0.5),0.0));
+  col = mix(col, EARTH_DARKBROWN, max(sin(v_fragPos.y*0.2),0.0));
+  return col;
+}
+vec3 snow() {
   vec3 snow_color = SNOW_COLOR;
-  snow_color *= calcLights(0.7, 0.4, 0.2, 4.0, AMBIENT_COLOR, DIFFUSE_COLOR, SPECULAR_COLOR);
-  vec2 v = v_fragPos.xz;
-  if (rand(v) > 0.99) {
-    snow_color += abs(sin(u_time + v.x*v.y)) * vec3(1.0);
+  vec2 v = v_fragPos.xz + v_fragPos.yz;
+  if (rand(v) > 0.997) {
+    snow_color += 0.8*snow_color*abs(sin(u_time + v.x * v.y));
   }
-  return vec4(snow_color, 1.0);
+  return snow_color;
 }
 
-vec4 earth() {
-  vec3 earth_color = EARTH_BROWN;
-  earth_color *= calcLights(0.5, 0.8, 0.2, 2.0, AMBIENT_COLOR, DIFFUSE_COLOR, SPECULAR_COLOR);
-  return vec4(earth_color, 1.0);
-}
-
-void main(){
-  float earthLevel = u_terrain[0];
-  float snowAmount = 1.0 - u_terrain[1];
-  float snowBlur = u_terrain[2];
-
+void main() {
   if (v_noise < u_clip[0] || v_noise > u_clip[1]) {
     discard;
   }
-
-  vec4 color = vec4(1.0);
-  float delta = 0.1;
+  float earthLevel = u_terrain[0];
+  float snowAmount = 1.0 - u_terrain[1];
+  float snowBlur = u_terrain[2];
   float dotN = max(dot(v_normal, vec3(0.0, 1.0, 0.0)), 0.0);
-  float f = smoothstep(snowAmount - snowBlur * 0.5, snowAmount + snowBlur * 0.5 , dotN);
-  //float f1 = smoothstep(-10.0, 10.0, v_fragPos.y);
-  color = mix(earth(), snow(), f) ;
+  float lower = max(snowAmount - snowBlur, 0.0);
+  float upper = min(snowAmount + snowBlur, snowAmount);
+  float f = smoothstep(lower, upper, dotN);
 
-  // color = water() * max(sign(waterLevel - v_noise), 0.0);
-  // color = earth() * max(sign(v_noise - earthLevel), 0.0);
-  // color = snow() * max(sign(v_noise - snowLevel), 0.0);
-  color.rgb += 0.05 * vec3(1.0, 0.0, 0.0);
-  color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
-  gl_FragColor = color;
+  vec3 terrainColor = mix(earth(), snow(), f) ;
+  vec3 outColor = calcLights(1.2, 1.0, 0.0, 0.0, SKY_COLOR, SUN_COLOR, terrainColor, SUN_COLOR);
+
+  outColor = pow(outColor, vec3(1.0 / 2.2));
+  gl_FragColor = vec4(outColor, 1.0);
 }
 `;
 
@@ -554,6 +551,7 @@ uniform sampler2D u_depth;
 uniform float u_near;
 uniform float u_far;
 uniform float u_fog;
+uniform vec3 u_fogColor;
 varying vec2 v_texCoord;
 varying vec3 v_normal;
 
@@ -569,14 +567,12 @@ void main(){
   vec3 texColor = texture2D(u_sample, v_texCoord).rgb;
   float depth = perspectiveDepth();
   //float depth = texture2D(u_depth, v_texCoord).r;
-  vec3 color = vec3(0.0);
-  vec3 fogColor = vec3(0.9);
+  vec3 fogColor = u_fogColor / 255.0;
   float b = u_fog;
-  float fogAmount = 1.0 - exp( -depth * depth * b);
+  float fogAmount = 1.0 - exp( -pow(b*depth, 1.5));
   fogAmount = clamp(fogAmount, 0.0, 1.0);
-  color = mix(texColor, fogColor, fogAmount);
+  vec3 color = mix(texColor, fogColor, fogAmount);
   gl_FragColor = vec4(color, 1.0);
-
 }
 `;
 
@@ -680,6 +676,7 @@ var SKYBOX_FSHADER =
     #define SUN_COLOR vec3(0.6,0.5,0.2)
     #define SUN_GLOW vec3(0.7,0.4,0.4)
     #define SKY_COLOR vec3(0.5,0.6,0.9)
+    #define SUN_DIR vec3(0.0, 0.5, -1.0)
 
     precision mediump float;
     uniform samplerCube u_cubemap;
@@ -749,7 +746,7 @@ var SKYBOX_FSHADER =
       float dist = (SC - 0.0)/rd.y;
       vec2 p = (dist*rd).xz;
 
-      vec3 sunDir = normalize(vec3(0.0, 0.5, -1.0));
+      vec3 sunDir = normalize(SUN_DIR);
       float sun = max(dot(sunDir, rd),0.0);
       vec3 skyCol = vec3(0.0);
       vec3 cloudCol = vec3(1.0);

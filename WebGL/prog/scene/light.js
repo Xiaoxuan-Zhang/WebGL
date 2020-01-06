@@ -18,7 +18,6 @@ class Light {
   }
 
   sendUniforms() {
-    this.position[1] = Math.abs(Math.sin(performance.now() * 0.001)) * 10.0;
     sendUniformVec3ToGLSL(this.position, 'u_lightPos');
     sendUniformVec3ToGLSL(this.color, 'u_lightColor');
     sendUniformVec3ToGLSL(this.specularColor, 'u_specularColor');

@@ -22,13 +22,14 @@ var g_terrain = {
   mapSize: 65, //must be (2^n + 1)
   displacement: 64.0,
   earth: -0.5,
-  snowBlur: 0.1,
-  snowAmount: 0.45,
+  snowBlur: 0.001,
+  snowAmount: 0.001,
   persistance: 0.41,
   lacunarity: 2.0,
   exponent: 2.5,
   clip: [-100.0, 100.0],
-  fogAmount: 1.2,
+  fogAmount: 0.1,
+  fogColor: [ 204, 204, 204 ],
   updateMouse: false
 };
 
@@ -212,14 +213,15 @@ function setupGUI() {
   let terrain = gui.addFolder('Terrain');
   terrain.add(g_terrain, 'displacement', 0.0, 300.0).listen();
   //terrain.add(g_terrain, 'earth', -2.0, 2.0).listen();
-  terrain.add(g_terrain, 'snowAmount', 0.3, 1.0).listen();
-  terrain.add(g_terrain, 'snowBlur', 0.0, 0.5).listen();
+  terrain.add(g_terrain, 'snowAmount', 0.0, 1.0).listen();
+  terrain.add(g_terrain, 'snowBlur', 0.0, 1.0).listen();
   terrain.add(g_terrain, 'persistance', 0.0, 1.0).listen();
   terrain.add(g_terrain, 'lacunarity', 1.0, 5.0).listen();
   //terrain.add(g_terrain, 'exponent', 0.0, 4.0).listen();
-  terrain.add(g_terrain, 'fogAmount', 0.1, 5.0).listen();
+  terrain.add(g_terrain, 'fogAmount', 0.1, 10.0).listen();
+  terrain.addColor(g_terrain, 'fogColor').listen();
   //terrain.add(g_terrain, 'clip', -5.0, 5.0).listen();
-  terrain.add(g_terrain, 'updateMouse');
+  //terrain.add(g_terrain, 'updateMouse');
   terrain.close();
 
   let particles = gui.addFolder('Particles');

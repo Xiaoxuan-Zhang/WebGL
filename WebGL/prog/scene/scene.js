@@ -9,6 +9,7 @@ var Scene = function() {
   this.sceneObjects = []; //Objects being added to scene
   this.skybox = null;
   this.final = null;
+  this.lights = null;
 }
 
 Scene.prototype.init = function() {
@@ -138,8 +139,8 @@ function addObjects() {
 }
 
 function addCat() {
-  let geo = new CustomObject(g_object["cat"]);
-  let uniforms = {
+  var geo = new CustomObject(g_object["cat"]);
+  var uniforms = {
     u_model: {type: "mat4", value: geo.modelMatrix},
     u_view: {type: "mat4", value: camera.viewMatrix},
     u_projection: {type: "mat4", value: camera.projectionMatrix},
@@ -149,7 +150,7 @@ function addCat() {
     u_specular: {type: "texture", value: g_texture["cat"]["specular"]},
     u_normal: {type: "texture", value: g_texture["cat"]["normal"]},
   };
-  let material = new Material(uniforms, g_programs['BasicLights']);
+  var material = new Material(uniforms, g_programs['BasicLights']);
   geo.translate(0.0, 2.0, -5.0);
   geo.scale([3.0, 3.0, 3.0]);
   geo.addMaterial(material);
@@ -157,47 +158,48 @@ function addCat() {
 }
 
 function addFloor() {
-  let geo = new Square();
+  var geo = new Square();
   geo.translate(0.0, 0.0, 0.0);
   geo.scale([20.0, 20.0, 20.0]);
   geo.rotate(-90, [1, 0, 0]);
-  let uniforms = {
+  var uniforms = {
     u_model: {type: "mat4", value: geo.modelMatrix},
     u_view: {type: "mat4", value: camera.viewMatrix},
     u_projection: {type: "mat4", value: camera.projectionMatrix},
     u_sample: {type: "texture", value: g_texture['wood']['diffuse']}
     //u_depth: {type: "texture", value: g_texture['framebuffer']['depth']},
   };
-  let material = new Material(uniforms, g_programs["Texture"]);
+  var material = new Material(uniforms, g_programs["Texture"]);
   geo.addMaterial(material);
   scene.addGeometry(geo);
 }
 
 function addCube() {
-  let geo = new Cube();
+  var geo = new Cube();
   geo.translate(0.0, 0.0, 0.0);
   geo.scale([2.0, 2.0, 2.0]);
-  let uniforms = {
+  var uniforms = {
     u_model: {type: "mat4", value: geo.modelMatrix},
     u_view: {type: "mat4", value: camera.viewMatrix},
     u_projection: {type: "mat4", value: camera.projectionMatrix},
     u_cubemap : {type: "cubemap", value: g_texture['skybox']['skybox']}
   }
-  let material = new Material(uniforms, g_programs["Cubemap"])
+  var material = new Material(uniforms, g_programs["Cubemap"])
   geo.addMaterial(material);
   scene.addGeometry(geo);
 }
 
 function addFinalQuad() {
-  let geo = new Square();
-  let uniforms = {
+  var geo = new Square();
+  var uniforms = {
     u_near: {type: "f", value: camera.near},
     u_far: {type: "f", value: camera.far},
     u_fog: {type: "f", value: g_terrain["fogAmount"]},
+    u_fogColor: {type: "v3", value: g_terrain["fogColor"]},
     u_sample: {type: "texture", value: g_texture['framebuffer']['color']},
     u_depth: {type: "texture", value: g_texture['framebuffer']['depth']},
   };
-  let material = new Material(uniforms, g_programs["Final"]);
+  var material = new Material(uniforms, g_programs["Final"]);
   geo.addMaterial(material);
   scene.final = geo;
 }
@@ -233,6 +235,9 @@ function addPCGTerrain() {
   scene.addSceneObject(new PCGTerrain(g_terrain['mapSize'], g_terrain['scale'], setLodInfo()));
 }
 
+function addLights() {
+
+}
 /* LOD details: LOD, viewDistance */
 function setLodInfo() {
   let lodInfo = [];
