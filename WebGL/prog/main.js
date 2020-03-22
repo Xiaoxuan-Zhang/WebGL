@@ -1,6 +1,3 @@
-/**
-* Function called when the webpage loads.
-*/
 var canvas;
 var gl;
 var scene, camera, light;
@@ -15,7 +12,7 @@ var g_frameBuffer = {};
 var lastTime = 0.0;
 var deltaTime = 0.0;
 /**
-Globals for terrain
+Globals for Terrain
 */
 var g_terrain = {
   scale: 1,
@@ -32,13 +29,21 @@ var g_terrain = {
   fogColor: [ 204, 204, 204 ],
   updateMouse: false
 };
-
+/**
+Globals for Particles
+*/
 var g_particles = {
   enable: false,
-  amount: 100,
-  speed: 1.0,
-  velocity: 1.0,
-  gravity: 0.5
+  amount: 2000,
+  birthRate: 0.5,
+  minAge: 1.0,
+  maxAge: 1.5,
+  minTheta: -180.0,
+  maxTheta: 180.0,
+  minSpeed: 0.1,
+  maxSpeed: 0.2,
+  force: 0.5,
+  gravity: -10.0
 }
 /**
 Globals for GUI
@@ -47,8 +52,9 @@ var g_guiInfo = {
   scene: 'Loading...',
   control: 'WSAD to move, IKJL to rotate'
 }
-
-
+/**
+* Function called when the webpage loads.
+*/
 function main() {
   // document.getElementById('headline').innerHTML = 'Main scene: Loading...'
 
@@ -64,11 +70,11 @@ function main() {
     console.log('Failed to get the webgl context');
     return;
   }
-  gl.getExtension("OES_texture_float");
-  gl.getExtension("OES_texture_float_linear");
-  gl.getExtension( "WEBGL_depth_texture");
-  gl.getExtension( "MOZ_WEBGL_depth_texture" );
-  gl.getExtension( "WEBKIT_WEBGL_depth_texture" );
+  //gl.getExtension("OES_texture_float");
+  //gl.getExtension("OES_texture_float_linear");
+  //gl.getExtension( "WEBGL_depth_texture");
+  //gl.getExtension( "MOZ_WEBGL_depth_texture" );
+  //gl.getExtension( "WEBKIT_WEBGL_depth_texture" );
   resizeCanvas();
   addShaderPrograms();
   loadObjects();
@@ -78,12 +84,12 @@ function main() {
   scene = new Scene();
   camera = new Camera();
   light = new Light();
+
   //Register events
   initEventHandelers(canvas);
   tick();
 
   setupGUI();
-
 }
 
 
@@ -110,6 +116,9 @@ function loadTextures() {
   // loadTextureFile('external/OBJ/Cat-1/Cat_N.PNG', 'cat', 'normal');
   //loadTextureFile('external/textures/turbulence_bw.png', 'heightMap', 'diffuse');
   loadTextureFile('external/textures/noise64.png', 'noise', 'noise64');
+  loadTextureFile('external/textures/noise.png', 'noise', 'noise512');
+  loadTextureFile('external/textures/turbulence.png', 'noise', 'turbulence');
+  loadTextureFile('external/textures/dot.png', 'dot', 'dot');
 }
 
 function loadObjects () {
@@ -225,15 +234,29 @@ function setupGUI() {
   terrain.close();
 
   let particles = gui.addFolder('Particles');
-  particles.add(g_particles, 'enable');
-  particles.add(g_particles, 'amount', 100, 1000).listen();
-  particles.add(g_particles, 'speed', 0.1, 5.0).listen();
-  particles.add(g_particles, 'velocity', 0.1, 5.0).listen();
-  particles.add(g_particles, 'gravity', 0.0, 5.0).listen();
+  var particalController = particles.add(g_particles, 'enable').listen();
+  particles.add(g_particles, 'amount', 0, 2000).listen();
+  particles.add(g_particles, 'birthRate', 0.0, 1.0).listen();
+  particles.add(g_particles, 'minAge', 0.0, 60.0).listen();
+  particles.add(g_particles, 'maxAge', 0.0, 60.0).listen();
+  particles.add(g_particles, 'minTheta', -360.0, 360.0, 1.0).listen();
+  particles.add(g_particles, 'maxTheta', -360.0, 360.0, 1.0).listen();
+  particles.add(g_particles, 'minSpeed', 0.0, 2.0, 0.01).listen();
+  particles.add(g_particles, 'maxSpeed', 0.0, 2.0, 0.01).listen();
+  particles.add(g_particles, 'force', 0.0, 100.0, 0.1).listen();
+  particles.add(g_particles, 'gravity', -10.0, 10.0, 0.1).listen();
   particles.close();
 
   let info = gui.addFolder('Info');
   info.add(g_guiInfo, 'scene').listen();
   info.add(g_guiInfo, 'control');
   info.open();
+
+  particalController.onChange(function(value) {
+    if (value) {
+      resetParticles(g_particles);
+    } else {
+      clearParticles();
+    }
+  });
 }

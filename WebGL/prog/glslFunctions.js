@@ -18,7 +18,7 @@ function send2DTextureToGLSL(val, textureUnit, uniformName) {
 
   let loc = gl.getUniformLocation(gl.program, uniformName);
   if (!loc) {
-    console.log('Failed to get the storage location of' + uniformName);
+    console.log('Failed to get the storage location of ' + uniformName);
     return false;
   }
 
@@ -106,7 +106,7 @@ function create2DTexture(imgPath, magParam, minParam, wrapSParam, wrapTParam, ca
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapSParam);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapTParam);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, image.width, image.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
     callback(texture);
   };
   // Tell the browser to load an image
@@ -201,46 +201,48 @@ function updateNullTexture(texture, width, height, internalFormat, format, borde
 }
 
 function createBufferData(data) {
-  let newBuffer = gl.createBuffer();
-  if (!newBuffer) {
+  let bufferObj = gl.createBuffer();
+  if (!bufferObj) {
     console.log('Failed to create the buffer object');
     return -1;
   }
   // Bind the buffer object to target
-  gl.bindBuffer(gl.ARRAY_BUFFER, newBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufferObj);
   // Write date into the buffer object
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-  return newBuffer;
+  return bufferObj;
 }
 /**
  * Sends data to an attribute variable using a buffer.
  *
  * @private
- * @param {Float32Array} data Data being sent to attribute variable
+ * @param {Number} buffer buffer object
  * @param {Number} dataCount The amount of data to pass per vertex
  * @param {String} attribName The name of the attribute variable
+ * @param {Number} dataType Data type
+ * @param {Number} stride The offset in bytes between the beginning of consecutive vertex attributes
+ * @param {Number} offset An offset in bytes of the first component in the vertex attribute array
  */
-function sendAttributeBufferToGLSL(newBuffer, dataCount, attribName) {
-
-  if (!newBuffer) {
+function sendAttributeBufferToGLSL(buffer, dataCount, attribName, dataType = gl.FLOAT, stride = 0, offset = 0) {
+  if (!buffer) {
     console.log('Invalid buffer object!');
     return -1;
   }
   // Bind the buffer object to target
-  gl.bindBuffer(gl.ARRAY_BUFFER, newBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
   let attribLoc = gl.getAttribLocation(gl.program, attribName);
   if (attribLoc < 0) {
     console.log('Failed to get the storage location of ' + attribName);
     return -1;
   }
-  // Assign the buffer object to an attribute variable
-  gl.vertexAttribPointer(attribLoc, dataCount, gl.FLOAT, false, 0, 0);
-
   // Enable the assignment to an attribute variable
   gl.enableVertexAttribArray(attribLoc);
-
+  // Assign the buffer object to an attribute variable
+  gl.vertexAttribPointer(attribLoc, dataCount, dataType, false, stride, offset);
+  return attribLoc;
 }
+
 /**
  * set indices buffer
  *

@@ -19,9 +19,7 @@ class Geometry {
     this.normalMatrix = new Matrix4();
     this.bufferDataUpdated = {};
     this.attributes = {}; // List of attributes that might be including color, position...
-    this.translateX = 0;
-    this.translateY = 0;
-    this.translateZ = 0;
+    this.translateValue = [0.0, 0.0, 0.0];
     this.scaleValue = [1.0, 1.0, 1.0];
     this.rotation = 0.0;
     this.rotationAxis = [0, 0, 1];
@@ -34,11 +32,12 @@ class Geometry {
       this.addMaterial(material)
     }
   }
-  //Optional
+
   addMaterial(materialObj) {
     this.material = materialObj;
     this.init();
   }
+
   init() {
     useShader(gl, this.material.shader);
     this.bufferDataUpdated['Vertices'] = {buffer: createBufferData(new Float32Array(this.vertices)), dataCount: 3, binded: true};
@@ -61,9 +60,9 @@ class Geometry {
   }
 
   translate(x, y, z) {
-    this.translateX = x;
-    this.translateY = y;
-    this.translateZ = z;
+    this.translateValue[0] = x;
+    this.translateValue[1] = y;
+    this.translateValue[2] = z;
   }
   scale(scale) {
     this.scaleValue = scale;
@@ -95,6 +94,7 @@ class Geometry {
     this.material.sendUniformToGLSL();
 
     light.sendUniforms();
+
     tellGLSLToDrawArrays(this.vertices.length/3);
   }
 
@@ -103,7 +103,7 @@ class Geometry {
    * Does nothing for non-animating geometry.
    */
   updateAnimation() {
-    this.modelMatrix.setTranslate(this.translateX, this.translateY, this.translateZ);
+    this.modelMatrix.setTranslate(this.translateValue[0], this.translateValue[1], this.translateValue[2]);
     this.modelMatrix.scale(this.scaleValue[0], this.scaleValue[1], this.scaleValue[2]);
 
     if (this.autoRotate) {
@@ -117,12 +117,6 @@ class Geometry {
     }
     this.normalMatrix.setInverseOf(this.modelMatrix);
     this.normalMatrix.transpose();
-    if (this.material.uniforms["u_fog"]) {
-      this.material.uniforms["u_fog"].value = g_terrain.fogAmount;
-    }
-    if (this.material.uniforms["u_fogColor"]) {
-      this.material.uniforms["u_fogColor"].value = g_terrain.fogColor;
-    }
   }
 
 }

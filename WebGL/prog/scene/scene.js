@@ -9,12 +9,11 @@ var Scene = function() {
   this.sceneObjects = []; //Objects being added to scene
   this.skybox = null;
   this.final = null;
-  this.lights = null;
+  this.particleSystem = [];
 }
 
 Scene.prototype.init = function() {
-  this.skybox = null;
-  this.clearGeometry();
+  this.clear();
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -41,15 +40,19 @@ Scene.prototype.addGeometry = function(geometry) {
   this.geometries.push(geometry);
 }
 
+Scene.prototype.addParticles = function(particles) {
+  this.particleSystem.push(particles);
+}
+
   /**
-   * Clears all the geometry within the scene.
+   * Clears all the geometries in the scene.
    */
-Scene.prototype.clearGeometry = function() {
-  // Recommendations: It would be best to call this.render() at the end of
-  // this call.
+Scene.prototype.clear = function() {
   this.geometries = [];
   this.sceneObjects = [];
-  this.render();
+  this.skybox = null;
+  this.final = null;
+  this.particleSystem = [];
 }
 
   /**
@@ -83,8 +86,14 @@ Scene.prototype.updateAnimation = function() {
  */
 Scene.prototype.render = function() {
   //let start = performance.now();
+
   //first pass : render to framebuffer
-  gl.bindFramebuffer(gl.FRAMEBUFFER, g_frameBuffer['first']);
+  if (this.final != null) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, g_frameBuffer['first']);
+  } else {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -110,12 +119,15 @@ Scene.prototype.render = function() {
     gl.enable(gl.CULL_FACE);
   }
 
-  //Second pass : render to scene
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  for (var i = 0; i < this.particleSystem.length; ++i) {
+    this.particleSystem[i].render();
+  }
 
+  //Second pass : render to scene
   if (this.final != null) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.final.render();
   }
 
@@ -130,12 +142,12 @@ function addObjects() {
   addFinalQuad();
   addPCGSky();
   //addSkybox();
+
   //addCat();
   //addFloor();
   //addCube();
 
   addPCGTerrain();
-
 }
 
 function addCat() {
@@ -235,9 +247,26 @@ function addPCGTerrain() {
   scene.addSceneObject(new PCGTerrain(g_terrain['mapSize'], g_terrain['scale'], setLodInfo()));
 }
 
-function addLights() {
-
+function addParticles(particleParams) {
+  var particlesObj = new Particles();
+  particlesObj.init(particleParams);
+  scene.addParticles(particlesObj);
 }
+
+function resetParticles(particleParams) {
+  scene.particleSystem = [];
+  var particlesObj = new Particles();
+  particlesObj.init(particleParams);
+  scene.addParticles(particlesObj);
+}
+
+function clearParticles() {
+  for (var part in scene.particleSystem) {
+    delete part;
+  }
+  scene.particleSystem = [];
+}
+
 /* LOD details: LOD, viewDistance */
 function setLodInfo() {
   let lodInfo = [];

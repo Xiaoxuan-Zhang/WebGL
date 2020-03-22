@@ -151,7 +151,9 @@ var create3DContext = function(canvas, opt_attribs) {
   for (var ii = 0; ii < names.length; ++ii) {
     try {
       context = canvas.getContext(names[ii], opt_attribs);
-    } catch(e) {}
+    } catch(e) {
+      console.log(e);
+    }
     if (context) {
       break;
     }

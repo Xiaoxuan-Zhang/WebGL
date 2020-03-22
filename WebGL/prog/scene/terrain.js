@@ -33,7 +33,6 @@ var PCGTerrain = function(mapSize, mapScale, lodInfo) {
 
 /*Pre-render operations*/
 PCGTerrain.prototype.init = function() {
-  useShader(gl, this.material.shader);
   for (let i = 0; i < this.LODMeshInfo.lodMeshes.length; i ++) {
     this.bufferDataUpdated['Vertice_' + this.LODMeshInfo.lodMeshes[i].vertices.length] = {buffer: createBufferData(this.LODMeshInfo.lodMeshes[i].vertices), dataCount: 3, binded: true};
     this.bufferDataUpdated['UV_' + this.LODMeshInfo.lodMeshes[i].UVs.length] = {buffer: createBufferData(this.LODMeshInfo.lodMeshes[i].UVs), dataCount: 2, binded: true};
@@ -132,9 +131,7 @@ var Terrain = function(terrainSize, terrainScale, position, lodMeshInfo) {
   this.lastLodIndex = -1;
   this.modelMatrix = new Matrix4(); // Model matrix applied to geometric object
   this.normalMatrix = new Matrix4();
-  this.translateX = 0;
-  this.translateY = 0;
-  this.translateZ = 0;
+  this.translateValue = [0.0, 0.0, 0.0];
   this.scaleValue = 1.0;
   this.rotation = 0.0;
   this.rotationAxis = [0, 0, 1];
@@ -146,9 +143,9 @@ var Terrain = function(terrainSize, terrainScale, position, lodMeshInfo) {
 }
 
 Terrain.prototype.translate = function(x, y, z) {
-  this.translateX = x;
-  this.translateY = y;
-  this.translateZ = z;
+  this.translateValue[0] = x;
+  this.translateValue[1] = y;
+  this.translateValue[2] = z;
 }
 
 Terrain.prototype.scale = function(scale) {
@@ -161,7 +158,7 @@ Terrain.prototype.rotate = function(degree, axis) {
 }
 
 Terrain.prototype.updateTransform = function() {
-  this.modelMatrix.setTranslate(this.translateX, this.translateY, this.translateZ);
+  this.modelMatrix.setTranslate(this.translateValue[0], this.translateValue[1], this.translateValue[2]);
   this.modelMatrix.scale(this.scaleValue, this.scaleValue, this.scaleValue);
 }
 

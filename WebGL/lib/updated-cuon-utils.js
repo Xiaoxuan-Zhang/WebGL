@@ -6,8 +6,8 @@
  * @param fshader a fragment shader program (string)
  * @return a WebGL shader program
  */
-function createShader(gl, vshader, fshader) {
-  var program = createProgram(gl, vshader, fshader);
+function createShader(gl, vshader, fshader, transformFeedbackProperties = null) {
+  var program = createProgram(gl, vshader, fshader, transformFeedbackProperties);
   if (!program) {
     console.log('Failed to create program');
     return null;
@@ -33,7 +33,7 @@ function useShader(gl, program) {
  * @param fshader a fragment shader program (string)
  * @return created program object, or null if the creation has failed
  */
-function createProgram(gl, vshader, fshader) {
+function createProgram(gl, vshader, fshader, transformFeedbackProperties = null) {
   // Create shader object
   var vertexShader = loadShader(gl, gl.VERTEX_SHADER, vshader);
   var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fshader);
@@ -51,6 +51,13 @@ function createProgram(gl, vshader, fshader) {
   gl.attachShader(program, vertexShader);
   gl.attachShader(program, fragmentShader);
 
+  //transform feedback
+  if (transformFeedbackProperties != null) {
+    gl.transformFeedbackVaryings(
+      program,
+      transformFeedbackProperties,
+      gl.INTERLEAVED_ATTRIBS)
+  }
   // Link the program object
   gl.linkProgram(program);
 

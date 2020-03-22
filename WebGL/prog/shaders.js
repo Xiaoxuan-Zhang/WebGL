@@ -1,5 +1,5 @@
 var BASICLIGHTS_VSHADER1 =
-  `
+  `#version 300 es
   precision mediump float;
   uniform mat4 u_model;
   uniform mat4 u_view;
@@ -9,18 +9,19 @@ var BASICLIGHTS_VSHADER1 =
   uniform vec3 u_cameraPos;
   uniform sampler2D u_normal;
 
-  attribute vec4 a_position;
-  attribute vec3 a_normal;
-  attribute vec2 a_texCoord;
+  in vec4 a_position;
+  in vec3 a_normal;
+  in vec2 a_texCoord;
 
-  varying vec2 v_texCoord;
-  varying vec3 v_normal;
-  varying vec3 v_fragPos;
-  varying vec3 v_lightPos;
-  varying vec3 v_cameraPos;
+  out vec2 v_texCoord;
+  out vec3 v_normal;
+  out vec3 v_fragPos;
+  out vec3 v_lightPos;
+  out vec3 v_cameraPos;
+
   void main(){
     gl_Position = u_projection * u_view * u_model * a_position;
-    vec3 texNor = texture2D(u_normal, v_texCoord).rgb;
+    vec3 texNor = texture(u_normal, v_texCoord).rgb;
     v_normal = mat3(u_normalMatrix) * a_normal; //Transform to model space
     v_fragPos = vec3(u_model * a_position); //Transform to model space
     v_lightPos = vec3(u_model * vec4(u_lightPos, 1.0)); //Transform to model space
@@ -30,7 +31,7 @@ var BASICLIGHTS_VSHADER1 =
   `;
 
 var BASICLIGHTS_FSHADER1 =
-  `
+  `#version 300 es
   precision mediump float;
 
   uniform vec3 u_lightColor;
@@ -38,14 +39,15 @@ var BASICLIGHTS_FSHADER1 =
   uniform sampler2D u_sample;
   uniform sampler2D u_specular;
 
-  varying vec3 v_normal;
-  varying vec3 v_fragPos;
-  varying vec3 v_lightPos;
-  varying vec3 v_cameraPos;
-  varying vec2 v_texCoord;
+  in vec3 v_normal;
+  in vec3 v_fragPos;
+  in vec3 v_lightPos;
+  in vec3 v_cameraPos;
+  in vec2 v_texCoord;
+  out vec4 outColor;
   void main(){
-    vec3 texDiff = texture2D(u_sample, v_texCoord).rgb;
-    vec3 texSpec = texture2D(u_specular, v_texCoord).rgb;
+    vec3 texDiff = texture(u_sample, v_texCoord).rgb;
+    vec3 texSpec = texture(u_specular, v_texCoord).rgb;
 
     vec3 normal = normalize(v_normal);
     //calculate ambient light
@@ -59,23 +61,23 @@ var BASICLIGHTS_FSHADER1 =
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(reflectDir, viewDir), 0.0), 64.0);
     vec3 specularColor = u_specularColor * spec * texSpec.r;
-    gl_FragColor = vec4(ambientColor + diffuseColor + specularColor , 1.0);
+    outColor = vec4(ambientColor + diffuseColor + specularColor , 1.0);
 
   }
   `;
 
 var TEX_VSHADER1 =
-  `
+  `#version 300 es
     precision mediump float;
     uniform mat4 u_model;
     uniform mat4 u_view;
     uniform mat4 u_projection;
 
-    attribute vec4 a_position;
-    attribute vec2 a_texCoord;
-    attribute vec3 a_normal;
-    varying vec2 v_texCoord;
-    varying vec3 v_normal;
+    in vec4 a_position;
+    in vec2 a_texCoord;
+    in vec3 a_normal;
+    out vec2 v_texCoord;
+    out vec3 v_normal;
 
     void main(){
       gl_Position = u_projection * u_view * u_model * a_position;
@@ -85,29 +87,29 @@ var TEX_VSHADER1 =
   `;
 
 var TEX_FSHADER1 =
-  `
+  `#version 300 es
   precision mediump float;
   uniform sampler2D u_sample;
-  varying vec2 v_texCoord;
-  varying vec3 v_normal;
-
+  in vec2 v_texCoord;
+  in vec3 v_normal;
+  out vec4 outColor;
   void main(){
-    vec4 texColor = texture2D(u_sample, v_texCoord);
-    gl_FragColor = texColor;
+    vec4 texColor = texture(u_sample, v_texCoord);
+    outColor = texColor;
 
   }
   `;
 
 var CUSTOM_VSHADER1 =
-`
+`#version 300 es
   precision mediump float;
   uniform mat4 u_model;
 
-  attribute vec4 a_position;
-  attribute vec2 a_texCoord;
-  attribute vec3 a_normal;
-  varying vec2 v_texCoord;
-  varying vec3 v_normal;
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  in vec3 a_normal;
+  out vec2 v_texCoord;
+  out vec3 v_normal;
 
   void main(){
     gl_Position = u_model * a_position;
@@ -117,22 +119,22 @@ var CUSTOM_VSHADER1 =
 `;
 
 var CUSTOM_FSHADER1 =
-`
+`#version 300 es
 precision mediump float;
 uniform sampler2D u_sample;
 //uniform sampler2D u_depth;
-varying vec2 v_texCoord;
-varying vec3 v_normal;
-
+in vec2 v_texCoord;
+in vec3 v_normal;
+out vec4 outColor;
 void main(){
-  vec4 texColor = texture2D(u_sample, v_texCoord);
-  gl_FragColor = texColor;
+  vec4 texColor = texture(u_sample, v_texCoord);
+  outColor = texColor;
 
 }
 `;
 
 var TERRAIN_VSHADER1 =
-`
+`#version 300 es
   precision mediump float;
   uniform mat4 u_model;
   uniform mat4 u_view;
@@ -142,13 +144,13 @@ var TERRAIN_VSHADER1 =
   uniform vec3 u_noise;
   uniform vec2 u_mouse;
   uniform vec3 u_cameraPos;
-  attribute vec4 a_position;
-  attribute vec2 a_texCoord;
-  attribute vec3 a_normal;
-  varying vec2 v_texCoord;
-  varying float v_noise;
-  varying vec3 v_normal;
-  varying vec3 v_fragPos;
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  in vec3 a_normal;
+  out vec2 v_texCoord;
+  out float v_noise;
+  out vec3 v_normal;
+  out vec3 v_fragPos;
   const int OCTAVES = 8;
   const bool CALC_NORM = true;
   //
@@ -256,15 +258,16 @@ var TERRAIN_VSHADER1 =
 `;
 
 var TERRAIN_FSHADER1 =
-`
+`#version 300 es
 precision mediump float;
 uniform vec3 u_terrain;
 uniform vec3 u_cameraPos;
 uniform float u_time;
-varying float v_noise;
-varying vec3 v_normal;
-varying vec2 v_texCoord;
-varying vec3 v_fragPos;
+in float v_noise;
+in vec3 v_normal;
+in vec2 v_texCoord;
+in vec3 v_fragPos;
+out vec4 outColor;
 const vec3 LIGHT_POSITION = vec3(0.0, 50.0, -50.0);
 const vec3 DIFFUSE_COLOR = vec3(0.01, 0.39, 0.41);
 const vec3 SPECULAR_COLOR = vec3(0.96, 0.95, 0.8);
@@ -321,12 +324,12 @@ void main(){
   } else if (v_noise > earthLevel) {
     color = earth();
   }
-  gl_FragColor = vec4(color, 1.0);
+  outColor = vec4(color, 1.0);
 }
 `;
 
 var TERRAIN_VSHADER2 =
-`
+`#version 300 es
   precision mediump float;
   uniform mat4 u_model;
   uniform mat4 u_view;
@@ -337,13 +340,13 @@ var TERRAIN_VSHADER2 =
   uniform vec3 u_terrain;
   uniform vec2 u_mouse;
   uniform vec3 u_cameraPos;
-  attribute vec4 a_position;
-  attribute vec2 a_texCoord;
-  attribute vec3 a_normal;
-  varying vec2 v_texCoord;
-  varying float v_noise;
-  varying vec3 v_normal;
-  varying vec3 v_fragPos;
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  in vec3 a_normal;
+  out vec2 v_texCoord;
+  out float v_noise;
+  out vec3 v_normal;
+  out vec3 v_fragPos;
 
 #define CALC_NORM 1
 
@@ -401,13 +404,13 @@ var TERRAIN_VSHADER2 =
     mat2  m = mat2(1.0,0.0,0.0,1.0);
     float value = 0.0;
     vec2 d = vec2(0.0);
-    vec2 sample = v;
+    vec2 pos = v;
     for (int i = 0; i < OCTAVES; i++) {
-      vec3 n = noised(sample);
+      vec3 n = noised(pos);
       value += amplitude * n.x;
       d += amplitude * m * n.yz;
       amplitude *= persistance;
-      sample = lacunarity*m2*sample;
+      pos = lacunarity*m2*pos;
       m = lacunarity*m2i*m;
     }
     return vec3(value, d);
@@ -442,16 +445,17 @@ var TERRAIN_VSHADER2 =
 `;
 
 var TERRAIN_FSHADER2 =
-`
+`#version 300 es
 precision mediump float;
 uniform vec3 u_terrain;
 uniform vec3 u_cameraPos;
 uniform vec2 u_clip;
 uniform float u_time;
-varying float v_noise;
-varying vec3 v_normal;
-varying vec2 v_texCoord;
-varying vec3 v_fragPos;
+in float v_noise;
+in vec3 v_normal;
+in vec2 v_texCoord;
+in vec3 v_fragPos;
+out vec4 outColor;
 
 const vec3 SNOW_COLOR = vec3(0.2);
 const vec3 SKY_COLOR = vec3(0.58, 0.65, 0.8);
@@ -519,22 +523,21 @@ void main() {
   float f = smoothstep(lower, upper, dotN);
 
   vec3 terrainColor = mix(earth(), snow(), f) ;
-  vec3 outColor = calcLights(1.2, 1.0, 0.0, 0.0, SKY_COLOR, SUN_COLOR, terrainColor, SUN_COLOR);
+  vec3 pixCol = calcLights(1.2, 1.0, 0.0, 0.0, SKY_COLOR, SUN_COLOR, terrainColor, SUN_COLOR);
 
-  outColor = pow(outColor, vec3(1.0 / 2.2));
-  gl_FragColor = vec4(outColor, 1.0);
+  pixCol = pow(pixCol, vec3(1.0 / 2.2));
+  outColor = vec4(pixCol, 1.0);
 }
 `;
 
 var FINAL_VSHADER =
-`
+`#version 300 es
   precision mediump float;
-
-  attribute vec4 a_position;
-  attribute vec2 a_texCoord;
-  attribute vec3 a_normal;
-  varying vec2 v_texCoord;
-  varying vec3 v_normal;
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  in vec3 a_normal;
+  out vec2 v_texCoord;
+  out vec3 v_normal;
 
   void main(){
     gl_Position = a_position;
@@ -544,7 +547,7 @@ var FINAL_VSHADER =
 `;
 
 var FINAL_FSHADER =
-`
+`#version 300 es
 precision mediump float;
 uniform sampler2D u_sample;
 uniform sampler2D u_depth;
@@ -552,11 +555,12 @@ uniform float u_near;
 uniform float u_far;
 uniform float u_fog;
 uniform vec3 u_fogColor;
-varying vec2 v_texCoord;
-varying vec3 v_normal;
+in vec2 v_texCoord;
+in vec3 v_normal;
+out vec4 outColor;
 
 float perspectiveDepth() {
-  vec4 texDepth = texture2D(u_depth, v_texCoord);
+  vec4 texDepth = texture(u_depth, v_texCoord);
   float depth = texDepth.r;
   float z = depth * 2.0 - 1.0; // Back to NDC
   depth = (2.0 * u_near * u_far) / (u_far + u_near - z * (u_far - u_near));
@@ -564,30 +568,30 @@ float perspectiveDepth() {
   return depth;
 }
 void main(){
-  vec3 texColor = texture2D(u_sample, v_texCoord).rgb;
+  vec3 texColor = texture(u_sample, v_texCoord).rgb;
   float depth = perspectiveDepth();
-  //float depth = texture2D(u_depth, v_texCoord).r;
+  //float depth = texture(u_depth, v_texCoord).r;
   vec3 fogColor = u_fogColor / 255.0;
   float b = u_fog;
   float fogAmount = 1.0 - exp( -pow(b*depth, 1.5));
   fogAmount = clamp(fogAmount, 0.0, 1.0);
   vec3 color = mix(texColor, fogColor, fogAmount);
-  gl_FragColor = vec4(color, 1.0);
+  outColor = vec4(color, 1.0);
 }
 `;
 
 var CUBEMAP_VSHADER =
-`
+`#version 300 es
   precision mediump float;
   uniform mat4 u_model;
   uniform mat4 u_view;
   uniform mat4 u_projection;
-  attribute vec4 a_position;
-  attribute vec2 a_texCoord;
-  attribute vec3 a_normal;
-  varying vec2 v_texCoord;
-  varying vec3 v_normal;
-  varying vec4 v_fragPos;
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  in vec3 a_normal;
+  out vec2 v_texCoord;
+  out vec3 v_normal;
+  out vec4 v_fragPos;
 
   void main(){
     v_fragPos = a_position;
@@ -598,32 +602,32 @@ var CUBEMAP_VSHADER =
 `;
 
 var CUBEMAP_FSHADER =
-`
+`#version 300 es
   precision mediump float;
   uniform samplerCube u_cubemap;
-  varying vec4 v_fragPos;
-  varying vec2 v_texCoord;
-  varying vec3 v_normal;
-
+  in vec4 v_fragPos;
+  in vec2 v_texCoord;
+  in vec3 v_normal;
+  out vec4 outColor;
   void main(){
-    vec3 cubeColor = textureCube(u_cubemap, v_fragPos.xyz).rgb;
-    gl_FragColor = vec4(cubeColor, 1.0);
+    vec3 cubeColor = texture(u_cubemap, v_fragPos.xyz).rgb;
+    outColor = vec4(cubeColor, 1.0);
   }
 `;
 
 var SKYBOX_VSHADER =
-  `
+  `#version 300 es
   precision mediump float;
   uniform mat4 u_view;
   uniform mat4 u_projection;
 
-  attribute vec4 a_position;
-  attribute vec2 a_texCoord;
-  attribute vec3 a_normal;
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  in vec3 a_normal;
 
-  varying vec2 v_texCoord;
-  varying vec3 v_normal;
-  varying vec4 v_fragPos;
+  out vec2 v_texCoord;
+  out vec3 v_normal;
+  out vec4 v_fragPos;
 
   void main(){
     v_fragPos = a_position;
@@ -636,30 +640,30 @@ var SKYBOX_VSHADER =
   `;
 
 var SKYBOX_FSHADER =
-  `
+  `#version 300 es
   precision mediump float;
   uniform samplerCube u_cubemap;
-  varying vec3 v_normal;
-  varying vec4 v_fragPos;
-  varying vec2 v_texCoord;
-
+  in vec3 v_normal;
+  in vec4 v_fragPos;
+  in vec2 v_texCoord;
+  out vec4 outColor;
   void main(){
-    vec3 sky = textureCube(u_cubemap, v_fragPos.xyz).rgb;
-    gl_FragColor = vec4(sky, 1.0);
+    vec3 sky = texture(u_cubemap, v_fragPos.xyz).rgb;
+    outColor = vec4(sky, 1.0);
   }
   `;
 
   var SKYBOXQUAD_VSHADER =
-    `
+    `#version 300 es
     precision mediump float;
 
-    attribute vec4 a_position;
-    attribute vec2 a_texCoord;
-    attribute vec3 a_normal;
+    in vec4 a_position;
+    in vec2 a_texCoord;
+    in vec3 a_normal;
 
-    varying vec2 v_texCoord;
-    varying vec3 v_normal;
-    varying vec4 v_fragPos;
+    out vec2 v_texCoord;
+    out vec3 v_normal;
+    out vec4 v_fragPos;
 
     void main(){
       v_fragPos = a_position;
@@ -672,7 +676,7 @@ var SKYBOX_FSHADER =
     `;
 
   var SKYBOXQUAD_FSHADER =
-    `
+    `#version 300 es
     #define SUN_COLOR vec3(0.6,0.5,0.2)
     #define SUN_GLOW vec3(0.7,0.4,0.4)
     #define SKY_COLOR vec3(0.5,0.6,0.9)
@@ -683,10 +687,11 @@ var SKYBOX_FSHADER =
     uniform sampler2D u_noisemap;
     uniform float u_time;
     uniform mat4 u_viewProjectInvMatrix;
-    varying vec4 v_fragPos;
+    in vec4 v_fragPos;
+    out vec4 outColor;
 
     float noise(in vec2 uv) {
-        return texture2D(u_noisemap, uv/64.0).r;
+        return texture(u_noisemap, uv/64.0).r;
     }
 
     float smoothNoise(in vec2 uv) {
@@ -759,11 +764,11 @@ var SKYBOX_FSHADER =
       float grad = smoothstep(0.0, 0.3, rd.y);
       skyCol = mix(SUN_GLOW*vec3(0.4,0.6,0.6), skyCol, grad);
 
-      vec3 texCubemap = textureCube( u_cubemap, rd ).rgb;
+      vec3 texCubemap = texture( u_cubemap, rd ).rgb;
       return skyCol;
     }
 
     void main(){
-      gl_FragColor = vec4(skybox(), 1.0);
+      outColor = vec4(skybox(), 1.0);
     }
     `;

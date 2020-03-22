@@ -33,13 +33,22 @@ class Material {
    */
    sendUniformToGLSL() {
      for(let key in this.uniforms) {
+       //update from GUI
+       if (key == "u_fog") {
+         this.uniforms[key].value = g_terrain.fogAmount;
+       } else if (key == "u_fogColor") {
+         this.uniforms[key].value = g_terrain.fogColor;
+       }
+
        let name = key;
        let type = "f";
        let value = this.uniforms[key].value;
+
        if ("type" in this.uniforms[key])
        {
          type = this.uniforms[key].type;
        }
+       
        if (type == "f"){
          sendUniformFloatToGLSL(value, name);
        } else if (type == "t"){
