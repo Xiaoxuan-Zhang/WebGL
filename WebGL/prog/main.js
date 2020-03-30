@@ -19,14 +19,14 @@ var g_terrain = {
   mapSize: 65, //must be (2^n + 1)
   displacement: 64.0,
   earth: -0.5,
-  snowBlur: 0.001,
-  snowAmount: 0.001,
+  snowBlur: 0.5,
+  snowAmount: 0.2,
   persistance: 0.41,
   lacunarity: 2.0,
   exponent: 2.5,
   clip: [-100.0, 100.0],
-  fogAmount: 0.01,
-  fogColor: [ 204, 204, 204 ],
+  fogAmount: 1.5,
+  fogColor: [ 238, 222, 242 ],
   updateMouse: false
 };
 /**
@@ -34,16 +34,17 @@ Globals for Particles
 */
 var g_particles = {
   enable: false,
-  amount: 2000,
-  birthRate: 0.5,
-  minAge: 1.0,
-  maxAge: 1.5,
+  amount: 3000,
+  birthRate: 0.15,
+  minAge: 10.0,
+  maxAge: 30.0,
   minTheta: -180.0,
   maxTheta: 180.0,
-  minSpeed: 0.1,
-  maxSpeed: 0.2,
-  force: 0.5,
-  gravity: -10.0
+  minSpeed: 0.32,
+  maxSpeed: 1.0,
+  force: 70.0,
+  gravity: -8.0,
+  scale: 1.0
 }
 /**
 Globals for GUI
@@ -245,6 +246,7 @@ function setupGUI() {
   particles.add(g_particles, 'maxSpeed', 0.0, 2.0, 0.01).listen();
   particles.add(g_particles, 'force', 0.0, 100.0, 0.1).listen();
   particles.add(g_particles, 'gravity', -10.0, 10.0, 0.1).listen();
+  particles.add(g_particles, 'scale', 0.1, 10.0, 0.1).listen();
   particles.close();
 
   let info = gui.addFolder('Info');

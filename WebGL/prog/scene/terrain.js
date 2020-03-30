@@ -24,7 +24,8 @@ var PCGTerrain = function(mapSize, mapScale, lodInfo) {
     u_noise: {type: "v3", value: [g_terrain.persistance, g_terrain.lacunarity, g_terrain.exponent]},
     u_clip: {type:"v2", value: g_terrain.clip},
     u_mouse: {type:"v2", value: [g_mousePos[0], -g_mousePos[1]]},
-    u_time: {type:"f", value: performance.now()}
+    u_time: {type:"f", value: performance.now()},
+    u_fogColor: {type:"v3", value: g_terrain.fogColor}
   }
   this.material = new Material(uniforms, g_programs["Terrain2"]);
   this.init();
@@ -76,6 +77,7 @@ PCGTerrain.prototype.sendUniforms = function() {
   this.material.uniforms.u_time.value = performance.now() * 0.001;
   this.material.uniforms.u_clip.value = g_terrain.clip;
   this.material.uniforms.u_mouse.value = g_terrain.updateMouse? [g_mousePos[0], -g_mousePos[1]] : [0.0, 0.0];
+  this.material.uniforms.u_fogColor.value = g_terrain.fogColor;
   this.material.sendUniformToGLSL();
 }
 

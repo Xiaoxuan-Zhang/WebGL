@@ -276,10 +276,10 @@
 
      //calculate delta time and update prevTime
      let deltaTime = 0.0;
-     let currTime = performance.now() / 1000.0;
+     let currTime = performance.now();
      if (this.prevTime != 0.0) {
        deltaTime = currTime - this.prevTime;
-       if (deltaTime > 0.5) {
+       if (deltaTime > 5000.0) {
          deltaTime = 0.0;
        }
      }
@@ -288,7 +288,7 @@
      this.totalTime += deltaTime;
 
      //update bornParticles according to birthRate and deltaTime
-     let numOfParts = this.params.amount; //this.bornParticles;
+     let numOfParts = this.bornParticles;
      if (this.bornParticles < this.params.amount) {
        this.bornParticles = Math.min(this.params.amount, Math.floor(this.bornParticles + this.params.birthRate * deltaTime));
      } else if (this.bornParticles > this.params.amount){
@@ -301,7 +301,7 @@
      useShader(gl, this.updateProgram)
 
      //send uniforms
-     sendUniformFloatToGLSL(deltaTime, "u_timeDelta");
+     sendUniformFloatToGLSL(deltaTime / 1000.0, "u_timeDelta");
      sendUniformVec4ToGLSL([this.params.minTheta,
                             this.params.maxTheta,
                             this.params.minSpeed,
@@ -340,6 +340,7 @@
      sendUniformMat4ToGLSL(camera.viewMatrix, "u_view");
      sendUniformMat4ToGLSL(camera.projectionMatrix, "u_projection");
      send2DTextureToGLSL(g_texture["dot"]["dot"], 0, "u_spriteTex");
+     sendUniformFloatToGLSL(this.params.scale, "u_spriteScale");
      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, numOfParts);
 
      //swap read and write buffers

@@ -451,6 +451,7 @@ uniform vec3 u_terrain;
 uniform vec3 u_cameraPos;
 uniform vec2 u_clip;
 uniform float u_time;
+uniform vec3 u_fogColor;
 in float v_noise;
 in vec3 v_normal;
 in vec2 v_texCoord;
@@ -458,11 +459,11 @@ in vec3 v_fragPos;
 out vec4 outColor;
 
 const vec3 SNOW_COLOR = vec3(0.2);
-const vec3 SKY_COLOR = vec3(0.58, 0.65, 0.8) * 0.8;
+const vec3 SKY_COLOR = vec3(0.58, 0.65, 0.8);
 const vec3 EARTH_BROWN = vec3(0.063, 0.034, 0.015);
 const vec3 EARTH_DARKBROWN = vec3(0.063, 0.024, 0.01) * 0.9;
 const vec3 LIGHT_DIR = vec3(0.3, 0.5, -0.8);
-const vec3 SUN_COLOR = vec3(1.9, 1.6, 1.0);
+const vec3 SUN_COLOR = vec3(1.9, 1.3, 1.4);
 
 float rand(vec2 v) {
     return fract(sin(dot(v ,vec2(12.9898,78.233))) * 43758.5453);

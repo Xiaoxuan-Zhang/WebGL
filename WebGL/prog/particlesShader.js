@@ -109,6 +109,7 @@ var PARTICLES_RENDER_QUAD_VSHADER =
   uniform mat4 u_model;
   uniform mat4 u_view;
   uniform mat4 u_projection;
+  uniform float u_spriteScale;
 
   //per instance
   in vec3 i_position;
@@ -126,7 +127,7 @@ var PARTICLES_RENDER_QUAD_VSHADER =
   out vec2 o_texCoord;
 
   void main() {
-    float scale = 0.8;
+
     o_velocity = i_velocity;
     o_age = i_age / i_lifeSpan;
 
@@ -149,11 +150,13 @@ var PARTICLES_RENDER_QUAD_VSHADER =
     // modelViewMatrix[2][0] = 0.0;
     // modelViewMatrix[2][1] = 0.0;
     // modelViewMatrix[2][2] = 1.0;
-    //vec3 vertPos = i_position + (scale * (1.0 - o_age) + 0.2) * vec3(i_coord, 0.0) * 2.0;
+
+    //vec3 vertPos = i_position + (scale * (1.0 - o_age) + 0.5) * vec3(i_coord, 0.0) * 2.0;
     //vec4 oPos = u_projection * modelViewMatrix * vec4(vertPos, 1.0);
 
     //http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/billboards/
-    vec2 vertOffset = (scale * (1.0 - o_age) + 0.2) * i_coord * 2.0;
+    float agingScale = 0.5;
+    vec2 vertOffset = (1.0 - agingScale * o_age) * i_coord * u_spriteScale;
     vec3 camRightWorld = vec3(u_view[0][0], u_view[1][0], u_view[2][0]);
     vec3 camUpWorld = vec3(u_view[0][1], u_view[1][1], u_view[2][1]);
     vec4 vertWorld = u_model * vec4(i_position, 1.0);
