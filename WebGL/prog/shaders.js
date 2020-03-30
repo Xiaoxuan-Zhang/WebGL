@@ -458,7 +458,7 @@ in vec3 v_fragPos;
 out vec4 outColor;
 
 const vec3 SNOW_COLOR = vec3(0.2);
-const vec3 SKY_COLOR = vec3(0.58, 0.65, 0.8);
+const vec3 SKY_COLOR = vec3(0.58, 0.65, 0.8) * 0.8;
 const vec3 EARTH_BROWN = vec3(0.063, 0.034, 0.015);
 const vec3 EARTH_DARKBROWN = vec3(0.063, 0.024, 0.01) * 0.9;
 const vec3 LIGHT_DIR = vec3(0.3, 0.5, -0.8);
@@ -497,8 +497,8 @@ vec3 calcLights(float a, float d, float s, float e, vec3 ambientColor, vec3 ligh
 }
 vec3 earth() {
   vec3 col = EARTH_BROWN;
-  col = mix(EARTH_BROWN, EARTH_DARKBROWN, max(sin(v_fragPos.y*0.5),0.0));
-  col = mix(col, EARTH_DARKBROWN, max(sin(v_fragPos.y*0.2),0.0));
+  col = mix(EARTH_BROWN, EARTH_DARKBROWN, max(sin(v_fragPos.y*0.8),0.0));
+  col = mix(col, EARTH_DARKBROWN*0.8, max(sin(v_fragPos.y*0.2),0.0));
   return col;
 }
 vec3 snow() {
@@ -563,19 +563,25 @@ float perspectiveDepth() {
   vec4 texDepth = texture(u_depth, v_texCoord);
   float depth = texDepth.r;
   float z = depth * 2.0 - 1.0; // Back to NDC
-  depth = (2.0 * u_near * u_far) / (u_far + u_near - z * (u_far - u_near));
-  depth /= u_far;
+  float near = u_near;
+  float far = u_far;
+  depth = (2.0 * near * far) / (far + near - z * (far - near));
+  depth /= far;
   return depth;
 }
+
 void main(){
   vec3 texColor = texture(u_sample, v_texCoord).rgb;
   float depth = perspectiveDepth();
   //float depth = texture(u_depth, v_texCoord).r;
+  //unfog skybox
+  if (depth > 0.99) {
+    depth = 0.1;
+  }
   vec3 fogColor = u_fogColor / 255.0;
   float b = u_fog;
-  float fogAmount = 1.0 - exp( -pow(b*depth, 1.5));
-  fogAmount = clamp(fogAmount, 0.0, 1.0);
-  vec3 color = mix(texColor, fogColor, fogAmount);
+  float fogAmount = exp(-b*depth);
+  vec3 color = fogColor*(1.0 - fogAmount) + texColor*fogAmount;
   outColor = vec4(color, 1.0);
 }
 `;
@@ -671,7 +677,7 @@ var SKYBOX_FSHADER =
       v_normal = a_normal;
       v_texCoord = a_texCoord;
       gl_Position = a_position;
-      gl_Position.z = 1.0;
+      gl_Position.z = gl_Position.w;
     }
     `;
 

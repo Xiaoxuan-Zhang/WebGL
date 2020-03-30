@@ -25,7 +25,7 @@ var g_terrain = {
   lacunarity: 2.0,
   exponent: 2.5,
   clip: [-100.0, 100.0],
-  fogAmount: 0.1,
+  fogAmount: 0.01,
   fogColor: [ 204, 204, 204 ],
   updateMouse: false
 };
@@ -227,7 +227,7 @@ function setupGUI() {
   terrain.add(g_terrain, 'persistance', 0.0, 1.0).listen();
   terrain.add(g_terrain, 'lacunarity', 1.0, 5.0).listen();
   //terrain.add(g_terrain, 'exponent', 0.0, 4.0).listen();
-  terrain.add(g_terrain, 'fogAmount', 0.1, 10.0).listen();
+  terrain.add(g_terrain, 'fogAmount', 0.01, 10.0, 0.05).listen();
   terrain.addColor(g_terrain, 'fogColor').listen();
   //terrain.add(g_terrain, 'clip', -5.0, 5.0).listen();
   //terrain.add(g_terrain, 'updateMouse');

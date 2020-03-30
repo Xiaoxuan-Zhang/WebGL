@@ -98,7 +98,7 @@ Scene.prototype.render = function() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   gl.frontFace(gl.CW);
-  g_terrain.clip = [-100.0, 100.0];
+  g_terrain.clip = [-100.0, 1000.0];
   this.sceneObjects.forEach(function(object) {
     object.render();
   });
