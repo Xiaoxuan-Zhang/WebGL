@@ -330,7 +330,6 @@ void main(){
 
 var TERRAIN_VSHADER2 =
 `#version 300 es
-
   precision mediump float;
   uniform mat4 u_model;
   uniform mat4 u_view;
@@ -339,6 +338,7 @@ var TERRAIN_VSHADER2 =
   uniform float u_displacement;
   uniform vec3 u_noise;
   uniform vec3 u_terrain;
+  uniform vec2 u_mouse;
   uniform vec3 u_cameraPos;
   uniform float u_noiseScale;
 
@@ -350,13 +350,9 @@ var TERRAIN_VSHADER2 =
   out vec3 v_normal;
   out vec3 v_fragPos;
 
-#define CALC_NORM 1
-#define OCTAVES 8
+  #define CALC_NORM 1
+  #define OCTAVES 8
 
-  const mat2 m2 = mat2(  0.80,  0.60,
-                        -0.60,  0.80 );
-  const mat2 m2i = mat2( 0.80, -0.60,
-                         0.60,  0.80 );
   // return smoothstep and its derivative
   vec2 smoothstepd( float a, float b, float x)
   {
@@ -378,61 +374,69 @@ var TERRAIN_VSHADER2 =
   {
       vec2 p = floor(x);
       vec2 w = fract(x);
+
       vec2 u = w*w*w*(w*(w*6.0-15.0)+10.0);
       vec2 du = 30.0*w*w*(w*(w-2.0)+1.0);
+
       float a = hash1(p+vec2(0,0));
       float b = hash1(p+vec2(1,0));
       float c = hash1(p+vec2(0,1));
       float d = hash1(p+vec2(1,1));
+
       float k0 = a;
       float k1 = b - a;
       float k2 = c - a;
       float k4 = a - b - c + d;
-      return vec3( -1.0+2.0*(k0 + k1*u.x + k2*u.y + k4*u.x*u.y),
+
+      return vec3(-1.0 + 2.0 * (k0 + k1*u.x + k2*u.y + k4*u.x*u.y),
                         2.0 * du * vec2( k1 + k4*u.y,
                                         k2 + k4*u.x ) );
   }
 
-  vec3 fbmd(vec2 v) {
+  vec4 fbmd(vec2 v) {
     float persistance = u_noise[0];
     float lacunarity = u_noise[1];
     float freq = 1.0;
-    float amp = 0.5;
-    mat2  m = mat2(1.0,0.0,0.0,1.0);
-    float sum = 0.0;
-    vec2 dSum = vec2(0.0);
-    vec2 pos = v;
+    float amplitude = 1.0;
+    float height = 0.0;
+    vec2 d = vec2(0.0);
     for (int i = 0; i < OCTAVES; i++) {
-      vec3 n = noised(pos);
-      sum += amp * n.x;
-      dSum += amp * m * n.yz;
-      amp *= persistance;
-      pos = lacunarity*m2*pos;
-      m *= lacunarity*m2i;
+      vec3 n = noised(v * freq);
+      //n = vec3(abs(n.x), sign(n.x) * n.yz); //Billowy
+      n = vec3(1.0 - abs(n.x), sign(n.x) * n.yz); //Ridged
+      height += amplitude * n.x;
+      d += amplitude * freq * n.yz;
+      amplitude *= persistance;
+      freq *= lacunarity;
     }
-    return vec3(sum, dSum);
+    return vec4(height, normalize(vec3(-d.x, 1.0, -d.y)));
   }
 
   vec4 terrainHeight(vec2 v) {
     v /= u_noiseScale;
-    vec3 h = fbmd(v);
-    // vec2 s = smoothstepd(-0.6, 0.6, h.x);
+    vec4 h = fbmd(v);
+    //smooth out the height a bit.
+    // vec2 s = smoothstepd(-0.6, 1.0, h.x);
     // h.x = s.x;
-    // h.yz += s.y * h.yz;
-    return vec4(h.x, normalize(vec3(-h.y, 1.0, -h.z)));
+    // h.yzw = s.y * h.yzw;
+    return h;
   }
+
   void main(){
     vec4 world_pos = u_model * a_position;
-    vec4 height = terrainHeight(world_pos.xz);
+    vec4 height = terrainHeight(world_pos.xz + u_mouse);
     vec3 new_position = world_pos.xyz + a_normal * u_displacement * height.x;
+
     gl_Position = u_projection * u_view * vec4(new_position, 1.0);
     v_noise = height.x;
     v_texCoord = a_texCoord;
+
 #if CALC_NORM == 1
       v_normal = height.yzw;
 #else
       v_normal = (u_normalMatrix * vec4(a_normal, 1.0)).xyz;
 #endif
+
     v_fragPos = new_position;
   }
 `;
@@ -440,7 +444,6 @@ var TERRAIN_VSHADER2 =
 var TERRAIN_FSHADER2 =
 `#version 300 es
 precision mediump float;
-uniform float u_displacement;
 uniform vec3 u_terrain;
 uniform vec3 u_cameraPos;
 uniform vec2 u_clip;
@@ -451,32 +454,30 @@ in vec3 v_normal;
 in vec2 v_texCoord;
 in vec3 v_fragPos;
 out vec4 outColor;
+
 const vec3 SNOW_COLOR = vec3(0.2);
 const vec3 SKY_COLOR = vec3(0.58, 0.65, 0.8);
 const vec3 EARTH_BROWN = vec3(0.063, 0.034, 0.015);
 const vec3 EARTH_DARKBROWN = vec3(0.063, 0.024, 0.01) * 0.9;
 const vec3 LIGHT_DIR = vec3(0.3, 0.5, -0.8);
 const vec3 SUN_COLOR = vec3(1.9, 1.3, 1.4);
+
 float rand(vec2 v) {
     return fract(sin(dot(v ,vec2(12.9898,78.233))) * 43758.5453);
 }
+
 vec3 calcLights(float a, float d, float s, float e, vec3 ambientColor, vec3 lightColor, vec3 materialColor, vec3 specColor) {
   vec3 color = vec3(1.0);
+
   //ambient
   ambientColor = ambientColor * a;
+
   //diffuse
-  // vec3 pos = vec3(v_fragPos.xyz);
-  //
-  // vec3 dx = dFdx(pos);
-  // vec3 dy = dFdy(pos);
-  //
-  // vec3 norm = normalize(cross(dx ,dy));
-
   vec3 norm =  normalize(v_normal) ;
-
   vec3 lightDir = normalize(LIGHT_DIR);
   float diffuse = max(dot(lightDir, norm), 0.0);
   vec3 diffuseColor = diffuse * d * lightColor;
+
   //specular
   /*
   vec3 viewDir = normalize(u_cameraPos - v_fragPos);
@@ -484,27 +485,29 @@ vec3 calcLights(float a, float d, float s, float e, vec3 ambientColor, vec3 ligh
   float specular = pow(max(dot(reflectDir, viewDir), 0.0), e);
   vec3 specularColor = specColor * specular * s;
   */
+
   //bouncing-back light from the sunDir
   float bc = max(dot(norm, normalize(lightDir * vec3(-1.0, 0.0, -1.0))), 0.0);
   vec3 bcColor = bc * ambientColor;
+
   color = materialColor * (ambientColor + diffuseColor + bcColor);
   return color;
 }
-vec3 earth() {
+vec3 earth(vec3 pos) {
   vec3 col = EARTH_BROWN;
-  float sca = 100.0 / u_displacement;
-  col = mix(EARTH_BROWN, EARTH_DARKBROWN, max(sin(v_fragPos.y * 0.5 * sca),0.0));
-  col = mix(col, EARTH_DARKBROWN*0.8, max(sin(v_fragPos.y * 0.2 * sca),0.0));
+  col = mix(EARTH_BROWN, EARTH_DARKBROWN, max(sin(pos.y*0.8),0.0));
+  col = mix(col, EARTH_DARKBROWN*0.8, max(sin(pos.y*0.2),0.0));
   return col;
 }
-vec3 snow() {
+vec3 snow(vec3 pos) {
   vec3 snow_color = SNOW_COLOR;
-  vec2 v = v_fragPos.xz + v_fragPos.yz;
+  vec2 v = pos.xz + pos.yz;
   if (rand(v) > 0.997) {
     snow_color += 0.8*snow_color*abs(sin(u_time + v.x * v.y));
   }
   return snow_color;
 }
+
 void main() {
   if (v_noise < u_clip[0] || v_noise > u_clip[1]) {
     discard;
@@ -516,8 +519,10 @@ void main() {
   float lower = max(snowAmount - snowBlur, 0.0);
   float upper = min(snowAmount + snowBlur, snowAmount);
   float f = smoothstep(lower, upper, dotN);
-  vec3 terrainColor = mix(earth(), snow(), f) ;
+
+  vec3 terrainColor = earth(v_fragPos); //mix(earth(v_fragPos), snow(v_fragPos), f) ;
   vec3 pixCol = calcLights(1.2, 1.0, 0.0, 0.0, SKY_COLOR, SUN_COLOR, terrainColor, SUN_COLOR);
+
   pixCol = pow(pixCol, vec3(1.0 / 2.2));
   outColor = vec4(pixCol, 1.0);
 }

@@ -16,12 +16,13 @@ Globals for Terrain
 */
 var g_terrain = {
   scale: 1,
-  mapSize: 65, //must be (2^n + 1)
-  displacement: 64.0,
+  mapSize: 257, //must be (2^n + 1)
+  noiseScale:100.0,
+  displacement: 42.0,
   earth: -0.5,
   snowBlur: 0.5,
   snowAmount: 0.2,
-  persistance: 0.41,
+  persistance: 0.43,
   lacunarity: 2.0,
   exponent: 2.5,
   clip: [-100.0, 100.0],
@@ -34,7 +35,7 @@ Globals for Particles
 */
 var g_particles = {
   enable: false,
-  amount: 3000,
+  amount: 8000,
   birthRate: 0.15,
   minAge: 10.0,
   maxAge: 30.0,
@@ -221,6 +222,7 @@ function setupGUI() {
   gui = new dat.GUI();
 
   let terrain = gui.addFolder('Terrain');
+  terrain.add(g_terrain, 'noiseScale', 1.0, 500.0).listen();
   terrain.add(g_terrain, 'displacement', 0.0, 300.0).listen();
   //terrain.add(g_terrain, 'earth', -2.0, 2.0).listen();
   terrain.add(g_terrain, 'snowAmount', 0.0, 1.0).listen();
@@ -236,7 +238,7 @@ function setupGUI() {
 
   let particles = gui.addFolder('Particles');
   var particalController = particles.add(g_particles, 'enable').listen();
-  particles.add(g_particles, 'amount', 0, 2000).listen();
+  particles.add(g_particles, 'amount', 0, 8000).listen();
   particles.add(g_particles, 'birthRate', 0.0, 1.0).listen();
   particles.add(g_particles, 'minAge', 0.0, 60.0).listen();
   particles.add(g_particles, 'maxAge', 0.0, 60.0).listen();

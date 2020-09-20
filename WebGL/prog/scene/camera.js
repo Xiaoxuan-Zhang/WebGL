@@ -5,7 +5,7 @@
  * @this {Camera}
  */
 var Camera = function() {
-  this.position = new Float32Array([0.0, 3.0, 10.0]);
+  this.position = new Float32Array([0.0, 10.0, 10.0]);
   this.target = new Float32Array([0.0, 0.0, 0.0]);
   this.worldUp = new Float32Array([0, 1, 0]);
   this.up = new Float32Array([0, 1, 0]);
